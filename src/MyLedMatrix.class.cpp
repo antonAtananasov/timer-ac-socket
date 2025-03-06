@@ -2,10 +2,12 @@
 
 enum MyLedState : uint8_t
 {
+    UNKNOWN = 255,
     LED_OFF = false,
     LED_ON = true,
     LED_BLINK = 2
 };
+const uint8_t MY_LED_STATES[] = {LED_OFF, LED_ON, LED_BLINK};
 
 class MyLedMatrix
 {
@@ -102,9 +104,17 @@ public:
         }
     }
 
+    bool isStateValid(MyLedState state)
+    {
+        for (uint8_t i = 0; i < sizeof(MY_LED_STATES) / sizeof(MY_LED_STATES[0]); i++)
+            if (MY_LED_STATES[i] == i)
+                return true;
+        return false;
+    }
+
     bool setClockLed(int hour, MyLedState state)
     {
-        if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
+        if (hour >= 1 && hour <= CLOCK_LEDS_COUNT && isStateValid(state))
         {
             ledStates[hour - 1] = state;
             return true;
@@ -118,7 +128,7 @@ public:
 
     bool setSocketLed(int socket, MyLedState state)
     {
-        if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
+        if (socket >= 1 && socket <= SOCKET_LEDS_COUNT && isStateValid(state))
         {
             ledStates[CLOCK_LEDS_COUNT + socket - 1] = state;
             return true;
@@ -131,33 +141,40 @@ public:
     }
     bool setStatusLed(MyLedState state)
     {
-        ledStates[LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT - 1] = state;
-        return true;
+        if (isStateValid(state))
+        {
+            ledStates[LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT - 1] = state;
+            return true;
+        }
+        else
+            return false;
     }
-    bool getClockLed(int hour)
+    MyLedState getClockLed(int hour)
     {
         if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
             return ledStates[hour - 1];
 
-        Serial.println("Invalid hour led. Returning 'false'.");
-        return false;
+        Serial.println("Invalid hour led. Returning UNKNOWN.");
+        return UNKNOWN;
     }
 
-    bool getSocketLed(int socket)
+    MyLedState getSocketLed(int socket)
     {
         if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
             return ledStates[CLOCK_LEDS_COUNT + socket - 1];
 
         Serial.println("Invalid socket led. Returning 'false'.");
-        return false;
+        return UNKNOWN;
     }
-    bool getStatusLed()
+    MyLedState getStatusLed()
     {
         return ledStates[LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT - 1];
     }
 
     bool setAllLeds(MyLedState state)
     {
+        if (!isStateValid(state))
+            return false;
         for (uint8_t i = 0; i < LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT; i++)
             ledStates[i] = state;
         return true;

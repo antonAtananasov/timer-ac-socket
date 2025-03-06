@@ -11,14 +11,14 @@
 #define LED_GROUP_5_PIN 6
 #define LED_GROUP_6_PIN 7
 
-// LED Logic level for enabling a LED group
-#define LED_GROUP_ACTIVE_LOGIC HIGH
-
 // LED Multiplex individual leds pins
 #define LED_INDIVIDUAL_1_PIN 8
 #define LED_INDIVIDUAL_2_PIN 9
 #define LED_INDIVIDUAL_3_PIN 10
 
+//TODO: extract into MySettings class
+// LED Logic level for enabling a LED group
+#define LED_GROUP_ACTIVE_LOGIC HIGH
 // LED Logic level for enabling an individual LED in a group
 #define LED_INDIVIDUAL_ACTIVE_LOGIC HIGH
 
