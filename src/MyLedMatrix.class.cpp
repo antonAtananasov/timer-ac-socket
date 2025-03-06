@@ -179,6 +179,29 @@ public:
         return true;
     }
 
+    bool displayTime(uint8_t hour, uint8_t minute)
+    {
+        if (hour >= 0 && hour <= 24 && minute >= 0 && minute <= 60)
+        {
+            hour = hour % 12;
+            if (hour == 0)
+                hour = 12;
+
+            minute = (minute % 60) / 5;
+            if (minute == 0)
+                minute = 12;
+
+            for (uint8_t i = 1; i <= CLOCK_LEDS_COUNT; i++)
+                setClockLed(i, LED_OFF);
+            setClockLed(hour, LED_ON);
+            setClockLed(minute, LED_BLINK);
+
+            return true;
+        }
+        else
+            return false;
+    }
+
     void testLEDs(unsigned long delayms = 50)
     {
         Serial.println("Testing LEDs");

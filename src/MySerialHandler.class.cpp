@@ -25,11 +25,14 @@ public:
 
     MySerialHandler(MyLedMatrix *LedMatrix, MySettings *settings, bool echo = true)
     {
-        Serial.println("Type \"HELP\" for info.");
-        LED_MATRIX = LedMatrix;
+                LED_MATRIX = LedMatrix;
         SETTINGS = settings;
         ECHO = echo;
     };
+
+    void motd(){
+        Serial.println("Type \"HELP\" for info.");
+    }
 
     void handleMessage()
     {
@@ -90,6 +93,15 @@ public:
             successful = SETTINGS->setLedGroupActiveLogic((bool)readCmdNumber(msg));
         else if (msg.startsWith("LEDINDLOGIC"))
             successful = SETTINGS->setLedIndividualActiveLogic((bool)readCmdNumber(msg));
+        // SETHOUR <hour 0-24>
+        // SETMIN <minute 0-60>
+        // SETSEC <second 0-60>
+        else if (msg.startsWith("SETHOUR"))
+            successful = SETTINGS->setHour(readCmdNumber(msg));
+        else if (msg.startsWith("SETMIN"))
+            successful = SETTINGS->setMinute(readCmdNumber(msg));
+        else if (msg.startsWith("SETSEC"))
+            successful = SETTINGS->setSecond(readCmdNumber(msg));
 
         // always at end
         Serial.println(successful ? "OK." : "Err.:" + msg);
@@ -103,13 +115,16 @@ public:
 
     void help()
     {
-        uint8_t msgCount = 5;
-        const char* messages[msgCount] = {
+        uint8_t msgCount = 8;
+        const char *messages[msgCount] = {
             "CLOCKLED <hour 1-12> <state 0-2>",
             "SOCKETLED <socket 1-5> <state 0-2>",
             "STATUSLED <state 0-2>",
             "LEDGRPLOGIC <logic level 0/1>",
-            "LEDINDLOGIC <logic level 0/1>"};
+            "LEDINDLOGIC <logic level 0/1>",
+            "SETHOUR <hour 0-24>",
+            "SETMIN <minute 0-60>",
+            "SETSEC <second 0-60>"};
         for (uint8_t i = 0; i < msgCount; i++)
             Serial.println(messages[i]);
     }
