@@ -33,13 +33,13 @@
     { "type": "wokwi-led", "id": "clockled10", "top": -50, "left": -86, "attrs": {} },
     { "type": "wokwi-led", "id": "clockled11", "top": -86, "left": -50, "attrs": {} },
     { "type": "wokwi-led", "id": "clockled12", "top": -100, "left": 0, "attrs": {} },
-    { "type": "wokwi-led", "id": "socketled1", "top": 0, "left": 200, "attrs": {} },
-    { "type": "wokwi-led", "id": "socketled2", "top": 0, "left": 220, "attrs": {} },
-    { "type": "wokwi-led", "id": "socketled3", "top": 0, "left": 240, "attrs": {} },
-    { "type": "wokwi-led", "id": "socketled4", "top": 0, "left": 260, "attrs": {} },
-    { "type": "wokwi-led", "id": "socketled5", "top": 0, "left": 280, "attrs": {} },
-    { "type": "wokwi-led", "id": "statusled1", "top": 0, "left": 340, "attrs": {} },
-    { "type": "wokwi-arduino-uno", "id": "uno", "top": 183, "left": -154.2, "attrs": {} }
+    { "type": "wokwi-led", "id": "socketled1", "top": 100, "left": 200, "attrs": {} },
+    { "type": "wokwi-led", "id": "socketled2", "top": 100, "left": 240, "attrs": {} },
+    { "type": "wokwi-led", "id": "socketled3", "top": 100, "left": 280, "attrs": {} },
+    { "type": "wokwi-led", "id": "socketled4", "top": 100, "left": 320, "attrs": {} },
+    { "type": "wokwi-led", "id": "socketled5", "top": 100, "left": 360, "attrs": {} },
+    { "type": "wokwi-led", "id": "statusled1", "top": -50, "left": 360, "attrs": {} },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 183, "left": -154.2, "attrs": {} } 
   ],
   "connections": [
     ["uno:2", "and1:A", "red", []],

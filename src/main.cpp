@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include "./MyLedMatrix.cpp"
+// #include "./MyLedMatrix.class.cpp"
+#include "./MySerialHandler.class.cpp"
 
 // 18 leds are multiplexed in 6 groups of 3
 // LED Multiplex groups pins
@@ -25,8 +26,9 @@
 MyLedMatrix LedMatrix(
     (uint8_t[6]){LED_GROUP_1_PIN, LED_GROUP_2_PIN, LED_GROUP_3_PIN, LED_GROUP_4_PIN, LED_GROUP_5_PIN, LED_GROUP_6_PIN},
     (uint8_t[3]){LED_INDIVIDUAL_1_PIN, LED_INDIVIDUAL_2_PIN, LED_INDIVIDUAL_3_PIN},
-    LED_GROUP_ACTIVE_LOGIC, LED_INDIVIDUAL_ACTIVE_LOGIC);
-;
+    LED_GROUP_ACTIVE_LOGIC, LED_INDIVIDUAL_ACTIVE_LOGIC,
+    350);
+MySerialHandler SerialHandler(&LedMatrix);
 
 void setup()
 {
@@ -35,8 +37,16 @@ void setup()
     Serial.println("Hello World");
 
     LedMatrix.testLEDs();
+    LedMatrix.setStatusLed(LED_BLINK);
 }
+
+
 
 void loop()
 {
+    // always at start of loop
+    SerialHandler.handleMessage();
+
+    // always at end of loop
+    LedMatrix.updateLedMatrix();
 }

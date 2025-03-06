@@ -1,5 +1,12 @@
 #include <Arduino.h>
 
+enum MyLedState : uint8_t
+{
+    LED_OFF = false,
+    LED_ON = true,
+    LED_BLINK = 2
+};
+
 class MyLedMatrix
 {
 private:
@@ -7,17 +14,21 @@ private:
     uint8_t LED_INDIVIDUAL_ACTIVE_LOGIC;
 
     // LED states (12 clock leds, where the first is 1 o'clock; 5 socket leds; 1 status led)
-    bool ledStates[18];
+    MyLedState ledStates[18];
     uint8_t LED_GROUP_PINS[6];
     uint8_t LED_INDIVIDUAL_PINS[3];
     // led pin combinations following state order (group, then individual)
     uint8_t LED_PIN_PAIRS[6][3][2];
+    unsigned long initTime;
 
 public:
+    unsigned long BLINK_DELAY_MS;
     const int LED_GROUPS_COUNT = 6;
     const int LED_INDIVIDUALS_COUNT = 3;
+    const int CLOCK_LEDS_COUNT = 12;
+    const int SOCKET_LEDS_COUNT = 5;
 
-    MyLedMatrix(uint8_t groupPins[6], uint8_t individualLedPins[3], uint8_t ledGroupActiveLogic, uint8_t ledIndividualActiveLogic)
+    MyLedMatrix(uint8_t groupPins[6], uint8_t individualLedPins[3], uint8_t ledGroupActiveLogic, uint8_t ledIndividualActiveLogic, unsigned long blinkDelay)
     {
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)
             LED_GROUP_PINS[i] = groupPins[i];
@@ -45,6 +56,10 @@ public:
             pinMode(LED_GROUP_PINS[groupPin], OUTPUT);
         for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             pinMode(LED_INDIVIDUAL_PINS[individualLed], OUTPUT);
+
+        BLINK_DELAY_MS = blinkDelay;
+
+        initTime = millis();
     }
 
     void updateLedMatrix()
@@ -65,39 +80,63 @@ public:
             for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
                 int ledStateIndex = activeLedGroup * LED_INDIVIDUALS_COUNT + individualLed;
-                bool ledState = ledStates[ledStateIndex];
+                MyLedState ledState = ledStates[ledStateIndex];
 
                 int ledGroupPin = LED_PIN_PAIRS[activeLedGroup][individualLed][0];
                 int ledIndividualPin = LED_PIN_PAIRS[activeLedGroup][individualLed][1];
-                // enable led with active state
+
+                // enable led group
                 digitalWrite(ledGroupPin, LED_GROUP_ACTIVE_LOGIC);
-                digitalWrite(ledIndividualPin, ledState ? LED_INDIVIDUAL_ACTIVE_LOGIC : !LED_INDIVIDUAL_ACTIVE_LOGIC);
+
+                // enable led with corresponding state
+                if (ledState == LED_ON)
+                    digitalWrite(ledIndividualPin, LED_INDIVIDUAL_ACTIVE_LOGIC);
+                else if (ledState == LED_BLINK)
+                {
+                    bool blinkState = ((millis() - initTime) / BLINK_DELAY_MS) % 2 == 0; // on for BLINK_DELAY_MS, then off for BLINK_DELAY_MS
+                    digitalWrite(ledIndividualPin, blinkState ? LED_INDIVIDUAL_ACTIVE_LOGIC : !LED_INDIVIDUAL_ACTIVE_LOGIC);
+                }
+                else // if (ledState == LED_OFF) or unknown
+                    digitalWrite(ledIndividualPin, !LED_INDIVIDUAL_ACTIVE_LOGIC);
             }
         }
     }
 
-    void setClockLed(int hour, bool state)
+    bool setClockLed(int hour, MyLedState state)
     {
-        if (hour >= 1 && hour <= 12)
+        if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
+        {
             ledStates[hour - 1] = state;
+            return true;
+        }
         else
+        {
             Serial.println("Invalid hour led");
+            return false;
+        }
     }
 
-    void setSocketLed(int socket, bool state)
+    bool setSocketLed(int socket, MyLedState state)
     {
-        if (socket >= 1 && socket <= 5)
-            ledStates[12 + socket - 1] = state;
+        if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
+        {
+            ledStates[CLOCK_LEDS_COUNT + socket - 1] = state;
+            return true;
+        }
         else
+        {
             Serial.println("Invalid socket led");
+            return false;
+        }
     }
-    void setStatusLed(bool state)
+    bool setStatusLed(MyLedState state)
     {
         ledStates[LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT - 1] = state;
+        return true;
     }
     bool getClockLed(int hour)
     {
-        if (hour >= 1 && hour <= 12)
+        if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
             return ledStates[hour - 1];
 
         Serial.println("Invalid hour led. Returning 'false'.");
@@ -106,8 +145,8 @@ public:
 
     bool getSocketLed(int socket)
     {
-        if (socket >= 1 && socket <= 5)
-            return ledStates[12 + socket - 1];
+        if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
+            return ledStates[CLOCK_LEDS_COUNT + socket - 1];
 
         Serial.println("Invalid socket led. Returning 'false'.");
         return false;
@@ -117,10 +156,11 @@ public:
         return ledStates[LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT - 1];
     }
 
-    void setAllLeds(bool state)
+    bool setAllLeds(MyLedState state)
     {
-        for (uint8_t i = 0; i < 18; i++)
+        for (uint8_t i = 0; i < LED_GROUPS_COUNT * LED_INDIVIDUALS_COUNT; i++)
             ledStates[i] = state;
+        return true;
     }
 
     void testLEDs(unsigned long delayms = 50)
@@ -128,11 +168,11 @@ public:
         Serial.println("Testing LEDs");
         unsigned long startTime = millis();
 
-        setAllLeds(false);
+        setAllLeds(LED_OFF);
         for (uint8_t round = 0; round < 2; round++)
-            for (uint8_t i = 1; i <= 12; i++)
+            for (uint8_t i = 1; i <= CLOCK_LEDS_COUNT; i++)
             {
-                setClockLed(i, true);
+                setClockLed(i, LED_ON);
                 while (millis() - startTime < delayms)
                 {
                     updateLedMatrix();
@@ -140,12 +180,12 @@ public:
                 }
                 startTime = millis();
 
-                setClockLed(i, false);
+                setClockLed(i, LED_OFF);
             }
         for (uint8_t round = 0; round < 2; round++)
-            for (uint8_t i = 1; i <= 5; i++)
+            for (uint8_t i = 1; i <= SOCKET_LEDS_COUNT; i++)
             {
-                setSocketLed(i, true);
+                setSocketLed(i, LED_ON);
                 while (millis() - startTime < delayms)
                 {
                     updateLedMatrix();
@@ -153,19 +193,19 @@ public:
                 }
                 startTime = millis();
 
-                setSocketLed(i, false);
+                setSocketLed(i, LED_OFF);
             }
-        for (uint8_t round = 0; round < 4; round++)
+        for (uint8_t round = 0; round < 2 * 2; round++)
         {
-            setStatusLed((round + 1) % 2 == 0);
-            while (millis() - startTime < delayms*2)
+            setStatusLed((round + 1) % 2 == 0 ? LED_ON : LED_OFF);
+            while (millis() - startTime < delayms * 2)
             {
                 updateLedMatrix();
                 delay(1);
             }
             startTime = millis();
         }
-        setAllLeds(false);
+        setAllLeds(LED_OFF);
 
         Serial.println("Done testing LEDs");
         updateLedMatrix();
