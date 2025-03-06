@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "./MyLedState.enum.h"
 #include "./MyLedMatrix.class.cpp"
+#include "./MySettings.class.h"
 
 struct LedAndState
 {
@@ -20,10 +21,13 @@ private:
 public:
     bool ECHO = true; // echo input back through serial
     MyLedMatrix *LED_MATRIX;
+    MySettings *SETTINGS;
 
-    MySerialHandler(MyLedMatrix *LedMatrix, bool echo = true)
+    MySerialHandler(MyLedMatrix *LedMatrix, MySettings *settings, bool echo = true)
     {
+        Serial.println("Type \"HELP\" for info.");
         LED_MATRIX = LedMatrix;
+        SETTINGS = settings;
         ECHO = echo;
     };
 
@@ -59,30 +63,55 @@ public:
 
         // CLOCKLED <HOUR> <STATE>
         // SOCKETLED <SOCKET> <STATE>
-        if (msg.startsWith("CLOCKLED") || msg.startsWith("SOCKETLED"))
+        if (msg.startsWith("HELP"))
+        {
+            help();
+            successful = true;
+        }
+        if (msg.startsWith("CLOCKLED"))
         {
             LedAndState values = readLedAndState(msg);
-
-            if (msg.startsWith("CLOCKLED"))
-                successful = LED_MATRIX->setClockLed(values.led, values.state);
-            else if (msg.startsWith("SOCKETLED"))
-                successful = LED_MATRIX->setSocketLed(values.led, values.state);
+            successful = LED_MATRIX->setClockLed(values.led, values.state);
+        }
+        else if (msg.startsWith("SOCKETLED"))
+        {
+            LedAndState values = readLedAndState(msg);
+            successful = LED_MATRIX->setSocketLed(values.led, values.state);
         }
         // STATUSLED <STATE>
         // ALLLEDS <STATE>
         else if (msg.startsWith("STATUSLED"))
-            successful = LED_MATRIX->setStatusLed(readLedState(msg));
+            successful = LED_MATRIX->setStatusLed((MyLedState)readCmdNumber(msg));
         else if (msg.startsWith("ALLLEDS"))
-            successful = LED_MATRIX->setAllLeds(readLedState(msg));
+            successful = LED_MATRIX->setAllLeds((MyLedState)readCmdNumber(msg));
+        // LEDGRPLOGIC <0/1>
+        // LEDINDLOGIC <0/1>
+        else if (msg.startsWith("LEDGRPLOGIC"))
+            successful = SETTINGS->setLedGroupActiveLogic((bool)readCmdNumber(msg));
+        else if (msg.startsWith("LEDINDLOGIC"))
+            successful = SETTINGS->setLedIndividualActiveLogic((bool)readCmdNumber(msg));
 
         // always at end
         Serial.println(successful ? "OK." : "Err.:" + msg);
     }
 
-    MyLedState readLedState(String msg)
+    int readCmdNumber(String msg)
     {
         int separatorIndex = msg.indexOf(SEPARATOR);
-        return (MyLedState)msg.substring(separatorIndex).toInt();
+        return msg.substring(separatorIndex).toInt();
+    }
+
+    void help()
+    {
+        uint8_t msgCount = 5;
+        const char* messages[msgCount] = {
+            "CLOCKLED <hour 1-12> <state 0-2>",
+            "SOCKETLED <socket 1-5> <state 0-2>",
+            "STATUSLED <state 0-2>",
+            "LEDGRPLOGIC <logic level 0/1>",
+            "LEDINDLOGIC <logic level 0/1>"};
+        for (uint8_t i = 0; i < msgCount; i++)
+            Serial.println(messages[i]);
     }
 
     LedAndState readLedAndState(String msg)
@@ -90,7 +119,7 @@ public:
         String cmd = msg.substring(msg.indexOf(SEPARATOR));
         int separatorIndex = cmd.indexOf(SEPARATOR);
         uint8_t led = cmd.substring(0, separatorIndex - 1).toInt();
-        MyLedState state = readLedState(cmd.substring(1));
+        MyLedState state = (MyLedState)readCmdNumber(cmd.substring(1));
         return {led, state};
     }
 };

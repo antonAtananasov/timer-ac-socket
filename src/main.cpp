@@ -1,5 +1,4 @@
 #include <Arduino.h>
-// #include "./MyLedMatrix.class.cpp"
 #include "./MySerialHandler.class.cpp"
 
 // 18 leds are multiplexed in 6 groups of 3
@@ -18,17 +17,18 @@
 
 //TODO: extract into MySettings class
 // LED Logic level for enabling a LED group
-#define LED_GROUP_ACTIVE_LOGIC HIGH
+#define DEFAULT_LED_GROUP_ACTIVE_LOGIC HIGH
 // LED Logic level for enabling an individual LED in a group
-#define LED_INDIVIDUAL_ACTIVE_LOGIC HIGH
+#define DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC HIGH
 
 // init objects
+MySettings Settings(DEFAULT_LED_GROUP_ACTIVE_LOGIC,DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC);
 MyLedMatrix LedMatrix(
     (uint8_t[6]){LED_GROUP_1_PIN, LED_GROUP_2_PIN, LED_GROUP_3_PIN, LED_GROUP_4_PIN, LED_GROUP_5_PIN, LED_GROUP_6_PIN},
     (uint8_t[3]){LED_INDIVIDUAL_1_PIN, LED_INDIVIDUAL_2_PIN, LED_INDIVIDUAL_3_PIN},
-    LED_GROUP_ACTIVE_LOGIC, LED_INDIVIDUAL_ACTIVE_LOGIC,
+    &Settings,
     350);
-MySerialHandler SerialHandler(&LedMatrix);
+MySerialHandler SerialHandler(&LedMatrix, &Settings);
 
 void setup()
 {

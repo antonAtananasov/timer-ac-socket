@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "./MySettings.class.cpp"
 
 enum MyLedState : uint8_t
 {
@@ -12,9 +13,6 @@ const uint8_t MY_LED_STATES[] = {LED_OFF, LED_ON, LED_BLINK};
 class MyLedMatrix
 {
 private:
-    uint8_t LED_GROUP_ACTIVE_LOGIC;
-    uint8_t LED_INDIVIDUAL_ACTIVE_LOGIC;
-
     // LED states (12 clock leds, where the first is 1 o'clock; 5 socket leds; 1 status led)
     MyLedState ledStates[18];
     uint8_t LED_GROUP_PINS[6];
@@ -30,7 +28,9 @@ public:
     const int CLOCK_LEDS_COUNT = 12;
     const int SOCKET_LEDS_COUNT = 5;
 
-    MyLedMatrix(uint8_t groupPins[6], uint8_t individualLedPins[3], uint8_t ledGroupActiveLogic, uint8_t ledIndividualActiveLogic, unsigned long blinkDelay)
+    MySettings *SETTINGS;
+
+    MyLedMatrix(uint8_t groupPins[6], uint8_t individualLedPins[3], MySettings *Settings, unsigned long blinkDelay)
     {
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)
             LED_GROUP_PINS[i] = groupPins[i];
@@ -51,15 +51,14 @@ public:
                 for (uint8_t k = 0; k < 2; k++)
                     LED_PIN_PAIRS[i][j][k] = layout[i][j][k];
 
-        LED_INDIVIDUAL_ACTIVE_LOGIC = ledIndividualActiveLogic;
-        LED_GROUP_ACTIVE_LOGIC = ledGroupActiveLogic;
-
         for (int groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             pinMode(LED_GROUP_PINS[groupPin], OUTPUT);
         for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             pinMode(LED_INDIVIDUAL_PINS[individualLed], OUTPUT);
 
         BLINK_DELAY_MS = blinkDelay;
+
+        SETTINGS = Settings;
 
         initTime = millis();
     }
@@ -72,12 +71,12 @@ public:
             for (int groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             {
                 // only enable active group
-                digitalWrite(LED_GROUP_PINS[groupPin], !LED_GROUP_ACTIVE_LOGIC);
+                digitalWrite(LED_GROUP_PINS[groupPin], !SETTINGS->getLedGroupActiveLogic());
             }
             for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
                 // only enable active group
-                digitalWrite(LED_INDIVIDUAL_PINS[individualLed], !LED_INDIVIDUAL_ACTIVE_LOGIC);
+                digitalWrite(LED_INDIVIDUAL_PINS[individualLed], !SETTINGS->getLedIndividualActiveLogic());
             }
             for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
@@ -88,18 +87,18 @@ public:
                 int ledIndividualPin = LED_PIN_PAIRS[activeLedGroup][individualLed][1];
 
                 // enable led group
-                digitalWrite(ledGroupPin, LED_GROUP_ACTIVE_LOGIC);
+                digitalWrite(ledGroupPin, SETTINGS->getLedGroupActiveLogic());
 
                 // enable led with corresponding state
                 if (ledState == LED_ON)
-                    digitalWrite(ledIndividualPin, LED_INDIVIDUAL_ACTIVE_LOGIC);
+                    digitalWrite(ledIndividualPin, SETTINGS->getLedIndividualActiveLogic());
                 else if (ledState == LED_BLINK)
                 {
                     bool blinkState = ((millis() - initTime) / BLINK_DELAY_MS) % 2 == 0; // on for BLINK_DELAY_MS, then off for BLINK_DELAY_MS
-                    digitalWrite(ledIndividualPin, blinkState ? LED_INDIVIDUAL_ACTIVE_LOGIC : !LED_INDIVIDUAL_ACTIVE_LOGIC);
+                    digitalWrite(ledIndividualPin, blinkState ? SETTINGS->getLedIndividualActiveLogic() : !SETTINGS->getLedIndividualActiveLogic());
                 }
                 else // if (ledState == LED_OFF) or unknown
-                    digitalWrite(ledIndividualPin, !LED_INDIVIDUAL_ACTIVE_LOGIC);
+                    digitalWrite(ledIndividualPin, !SETTINGS->getLedIndividualActiveLogic());
             }
         }
     }
