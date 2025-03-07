@@ -63,7 +63,7 @@ public:
         initTime = millis();
     }
 
-    void updateLedMatrix()
+    void update()
     {
         for (int activeLedGroup = 0; activeLedGroup < LED_GROUPS_COUNT; activeLedGroup++)
         {
@@ -120,7 +120,7 @@ public:
         }
         else
         {
-            Serial.println("Invalid hour led");
+            Serial.println(F("Invalid hour led"));
             return false;
         }
     }
@@ -134,7 +134,7 @@ public:
         }
         else
         {
-            Serial.println("Invalid socket led");
+            Serial.println(F("Invalid socket led"));
             return false;
         }
     }
@@ -153,7 +153,7 @@ public:
         if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
             return ledStates[hour - 1];
 
-        Serial.println("Invalid hour led. Returning UNKNOWN.");
+        Serial.println(F("Invalid hour led. Returning UNKNOWN."));
         return UNKNOWN;
     }
 
@@ -162,7 +162,7 @@ public:
         if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
             return ledStates[CLOCK_LEDS_COUNT + socket - 1];
 
-        Serial.println("Invalid socket led. Returning 'false'.");
+        Serial.println(F("Invalid socket led. Returning 'false'."));
         return UNKNOWN;
     }
     MyLedState getStatusLed()
@@ -204,7 +204,7 @@ public:
 
     void testLEDs(unsigned long delayms = 50)
     {
-        Serial.println("Testing LEDs");
+        Serial.println(F("Testing LEDs"));
         unsigned long startTime = millis();
 
         setAllLeds(LED_OFF);
@@ -214,7 +214,7 @@ public:
                 setClockLed(i, LED_ON);
                 while (millis() - startTime < delayms)
                 {
-                    updateLedMatrix();
+                    update();
                     delay(1);
                 }
                 startTime = millis();
@@ -227,7 +227,7 @@ public:
                 setSocketLed(i, LED_ON);
                 while (millis() - startTime < delayms)
                 {
-                    updateLedMatrix();
+                    update();
                     delay(1);
                 }
                 startTime = millis();
@@ -239,14 +239,14 @@ public:
             setStatusLed((round + 1) % 2 == 0 ? LED_ON : LED_OFF);
             while (millis() - startTime < delayms * 2)
             {
-                updateLedMatrix();
+                update();
                 delay(1);
             }
             startTime = millis();
         }
         setAllLeds(LED_OFF);
 
-        Serial.println("Done testing LEDs");
-        updateLedMatrix();
+        Serial.println(F("Done testing LEDs"));
+        update();
     }
 };
