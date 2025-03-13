@@ -1,14 +1,12 @@
-#include <Arduino.h>
-#include "./MyLedState.enum.h"
-#include "./MyLedMatrix.class.cpp"
-#include "./MySettings.class.h"
-#include "./MyTimer.class.cpp"
+#ifndef MySerialHandler_CLASS
+#define MySerialHandler_CLASS
 
-struct LedAndState
-{
-    uint8_t led;
-    MyLedState state;
-};
+#include <Arduino.h>
+#include "MyLedState.enum.h"
+#include "MyLedAndState.struct.h"
+#include "MyLedMatrix.class.h"
+#include "MySettings.class.h"
+#include "MyTimer.class.h"
 
 class MySerialHandler
 {
@@ -25,10 +23,10 @@ public:
     MySettings *SETTINGS;
     MyTimer *TIMER;
 
-    MySerialHandler(MyLedMatrix *LedMatrix, MySettings *settings, MyTimer *timer, bool echo = true)
+    MySerialHandler(MyLedMatrix *LedMatrix, MySettings *Settings, MyTimer *timer, bool echo = true)
     {
         LED_MATRIX = LedMatrix;
-        SETTINGS = settings;
+        SETTINGS = Settings;
         TIMER = timer;
         ECHO = echo;
     };
@@ -84,12 +82,12 @@ public:
         }
         if (msg.startsWith("CLOCKLED"))
         {
-            LedAndState values = readLedAndState(msg);
+            MyLedAndState values = readLedAndState(msg);
             successful = LED_MATRIX->setClockLed(values.led, values.state);
         }
         else if (msg.startsWith("SOCKETLED"))
         {
-            LedAndState values = readLedAndState(msg);
+            MyLedAndState values = readLedAndState(msg);
             successful = LED_MATRIX->setSocketLed(values.led, values.state);
         }
         // STATUSLED <STATE>
@@ -100,10 +98,13 @@ public:
             successful = LED_MATRIX->setAllLeds((MyLedState)readCmdNumber(msg));
         // LEDGRPLOGIC <0/1>
         // LEDINDLOGIC <0/1>
+        // SOCKLOGIC <0/1>
         else if (msg.startsWith("LEDGRPLOGIC"))
             successful = SETTINGS->setLedGroupActiveLogic((bool)readCmdNumber(msg));
         else if (msg.startsWith("LEDINDLOGIC"))
             successful = SETTINGS->setLedIndividualActiveLogic((bool)readCmdNumber(msg));
+        else if (msg.startsWith("SOCKLOGIC"))
+            successful = SETTINGS->setSocketsActiveLogic((bool)readCmdNumber(msg));
         // GETTIME
         else if (msg.startsWith("GETTIME"))
         {
@@ -127,20 +128,21 @@ public:
 
     void help()
     {
-        uint8_t msgCount = 7;
+        uint8_t msgCount = 8;
         const char *messages[msgCount] = {
             "CLOCKLED <hour 1-12> <state 0-2>",
             "SOCKETLED <socket 1-5> <state 0-2>",
             "STATUSLED <state 0-2>",
             "LEDGRPLOGIC <logic level 0/1>",
             "LEDINDLOGIC <logic level 0/1>",
+            "SOCKLOGIC <logic level 0/1>",
             "GETTIME",
             "SETTIME <HH> <MM> <SS>"};
         for (uint8_t i = 0; i < msgCount; i++)
             Serial.println(messages[i]);
     }
 
-    LedAndState readLedAndState(String msg)
+    MyLedAndState readLedAndState(String msg)
     {
         String cmd = msg.substring(msg.indexOf(SEPARATOR));
         int separatorIndex = cmd.indexOf(SEPARATOR);
@@ -175,15 +177,17 @@ public:
         return successfulSettingUpdate && successfulTimerUpdate;
     }
 
-    void printTime(){
+    void printTime()
+    {
         MyTime time = TIMER->getTime();
-            Serial.print(time.hour);
-            Serial.print(':');
-            Serial.print(time.minute);
-            Serial.print(':');
-            Serial.print(time.second);
-            Serial.print('.');
-            Serial.print(time.millisecond);
-            Serial.println();
+        Serial.print(time.hour);
+        Serial.print(':');
+        Serial.print(time.minute);
+        Serial.print(':');
+        Serial.print(time.second);
+        Serial.print('.');
+        Serial.print(time.millisecond);
+        Serial.println();
     }
 };
+#endif
