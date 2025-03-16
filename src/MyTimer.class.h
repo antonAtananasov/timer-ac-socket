@@ -4,19 +4,8 @@
 #include <Arduino.h>
 #include "MySettings.class.h"
 #include "MyTime.struct.h"
-
-// USER SETTINGS:
-// Time save interval
-#define TIME_SAVE_DELAY MS_IN_ONE_MINUTE * 5
-
-// Descriptive literal constants
-#define MS_IN_ONE_SECOND 1000ULL
-#define SECONDS_IN_ONE_MINUTE 60
-#define MINUTES_IN_ONE_HOUR 60
-#define HOURS_IN_ONE_DAY 24
-#define MS_IN_ONE_MINUTE MS_IN_ONE_SECOND *SECONDS_IN_ONE_MINUTE
-#define MS_IN_ONE_HOUR MS_IN_ONE_MINUTE *MINUTES_IN_ONE_HOUR
-
+#include "MyConstants.const.h"
+#include "UserSettings.const.h"
 
 
 class MyTimer

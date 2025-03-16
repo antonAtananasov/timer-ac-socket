@@ -4,23 +4,10 @@
 #include "MyLedMatrix.class.h"
 #include "MyTimer.class.h"
 #include "MyLedState.enum.h"
+#include "UserSettings.const.h"
 
 // IMPORTANT
-// Please look at the #define user settings in all ".class" files
-// MySettings, MyTimer, MySerialHandler, MyLedMatrix, etc.
-
-// USER SETTINGS:
-// Time save interval
-#define TIME_SHOW_DELAY MS_IN_ONE_SECOND
-
-
-// Descriptive literal constants
-#define MS_IN_ONE_SECOND 1000ULL
-#define SECONDS_IN_ONE_MINUTE 60
-#define MINUTES_IN_ONE_HOUR 60
-#define HOURS_IN_ONE_DAY 24
-#define MS_IN_ONE_MINUTE MS_IN_ONE_SECOND *SECONDS_IN_ONE_MINUTE
-#define MS_IN_ONE_HOUR MS_IN_ONE_MINUTE *MINUTES_IN_ONE_HOUR
+// Please look at the UserSettings file and check the configuration before using this sketch
 
 void setup()
 {
@@ -32,8 +19,9 @@ void setup()
 // init objects
 MySettings Settings(true, true);
 MyLedMatrix LedMatrix(
-    &Settings,
-    350);
+    &Settings, 
+    LED_PIN_PAIRS_LAYOUT,
+    LED_BLINK_DELAY_MS);
 MyTimer Timer(0, 0, 0, &Settings);
 MySerialHandler SerialHandler(&LedMatrix, &Settings, &Timer);
 

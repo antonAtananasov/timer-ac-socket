@@ -3,31 +3,8 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-
-// USER SETTINGS:
-//  LED Logic level for enabling a LED group
-#define DEFAULT_LED_GROUP_ACTIVE_LOGIC HIGH
-// LED Logic level for enabling an individual LED in a group
-#define DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC HIGH
-// Sockets level for enabling an individual LED in a group
-#define DEFAULT_SOCKET_ACTIVE_LOGIC LOW
-
-// EEPROM Addresses
-#define EEPROM_HOUR_BYTE_ADDRES 0
-#define EEPROM_MINUTE_BYTE_ADDRES 1
-#define EEPROM_SECOND_BYTE_ADDRES 2
-
-#define EEPROM_LOGIC_LEVELS_BYTE_ADDRES 3
-#define EEPROM_LOGIC_LEVEL_LED_GROUP_BIT_NUMBER 0
-#define EEPROM_LOGIC_LEVEL_LED_INDIVIDUAL_BIT_NUMBER 1
-#define EEPROM_LOGIC_LEVEL_SOCKET_BIT_NUMBER 2
-
-#define EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES 4
-
-// Descriptive literal constants
-#define SECONDS_IN_ONE_MINUTE 60
-#define MINUTES_IN_ONE_HOUR 60
-#define HOURS_IN_ONE_DAY 24
+#include "MyConstants.const.h"
+#include "UserSettings.const.h"
 
 class MySettings
 {

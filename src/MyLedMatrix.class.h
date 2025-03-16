@@ -4,21 +4,7 @@
 #include <Arduino.h>
 #include "MySettings.class.h"
 #include "MyLedState.enum.h"
-
-// USER SETTINGS:
-//  18 leds are multiplexed in 6 groups of 3
-//  LED Multiplex groups pins
-#define LED_GROUP_1_PIN 2
-#define LED_GROUP_2_PIN 3
-#define LED_GROUP_3_PIN 4
-#define LED_GROUP_4_PIN 5
-#define LED_GROUP_5_PIN 6
-#define LED_GROUP_6_PIN 7
-
-// LED Multiplex individual leds pins
-#define LED_INDIVIDUAL_1_PIN 8
-#define LED_INDIVIDUAL_2_PIN 9
-#define LED_INDIVIDUAL_3_PIN 10
+#include "UserSettings.const.h"
 
 const uint8_t MY_LED_STATES[] = {LED_OFF, LED_ON, LED_BLINK};
 
@@ -26,40 +12,31 @@ class MyLedMatrix
 {
 private:
     // LED states (12 clock leds, where the first is 1 o'clock; 5 socket leds; 1 status led)
-    MyLedState ledStates[18];
-    uint8_t LED_GROUP_PINS[6]={LED_GROUP_1_PIN, LED_GROUP_2_PIN, LED_GROUP_3_PIN, LED_GROUP_4_PIN, LED_GROUP_5_PIN, LED_GROUP_6_PIN};
-    uint8_t LED_INDIVIDUAL_PINS[3]={LED_INDIVIDUAL_1_PIN, LED_INDIVIDUAL_2_PIN, LED_INDIVIDUAL_3_PIN};
+    MyLedState ledStates[LEDS_TOTAL];
     // led pin combinations following state order (group, then individual)
-    uint8_t LED_PIN_PAIRS[6][3][2];
+    uint8_t LED_PIN_PAIRS[LED_GROUPS_COUNT][LED_INDIVIDUALS_COUNT][2];
+    uint8_t LED_GROUP_PINS[LED_GROUPS_COUNT], LED_INDIVIDUAL_PINS[LED_INDIVIDUALS_COUNT];
     unsigned long initTime;
 
 public:
     unsigned long BLINK_DELAY_MS;
-    const int LED_GROUPS_COUNT = 6;
-    const int LED_INDIVIDUALS_COUNT = 3;
-    const int CLOCK_LEDS_COUNT = 12;
-    const int SOCKET_LEDS_COUNT = 5;
-
     MySettings *SETTINGS;
 
-    MyLedMatrix(MySettings *Settings, unsigned long blinkDelay)
+    MyLedMatrix(MySettings *Settings, uint8_t layout[6][3][2], unsigned long blinkDelay)
     {
-        // layout may have to change
-        uint8_t layout[LED_GROUPS_COUNT][LED_INDIVIDUALS_COUNT][2] =
-            {{{LED_GROUP_PINS[0], LED_INDIVIDUAL_PINS[0]}, {LED_GROUP_PINS[0], LED_INDIVIDUAL_PINS[1]}, {LED_GROUP_PINS[0], LED_INDIVIDUAL_PINS[2]}},
-             {{LED_GROUP_PINS[1], LED_INDIVIDUAL_PINS[0]}, {LED_GROUP_PINS[1], LED_INDIVIDUAL_PINS[1]}, {LED_GROUP_PINS[1], LED_INDIVIDUAL_PINS[2]}},
-             {{LED_GROUP_PINS[2], LED_INDIVIDUAL_PINS[0]}, {LED_GROUP_PINS[2], LED_INDIVIDUAL_PINS[1]}, {LED_GROUP_PINS[2], LED_INDIVIDUAL_PINS[2]}},
-             {{LED_GROUP_PINS[3], LED_INDIVIDUAL_PINS[0]}, {LED_GROUP_PINS[3], LED_INDIVIDUAL_PINS[1]}, {LED_GROUP_PINS[3], LED_INDIVIDUAL_PINS[2]}},
-             {{LED_GROUP_PINS[4], LED_INDIVIDUAL_PINS[0]}, {LED_GROUP_PINS[4], LED_INDIVIDUAL_PINS[1]}, {LED_GROUP_PINS[4], LED_INDIVIDUAL_PINS[2]}},
-             {{LED_GROUP_PINS[5], LED_INDIVIDUAL_PINS[0]}, {LED_GROUP_PINS[5], LED_INDIVIDUAL_PINS[1]}, {LED_GROUP_PINS[5], LED_INDIVIDUAL_PINS[2]}}};
-
-        //build logical led pin pairs
+        // build logical led pin pairs
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)
             for (uint8_t j = 0; j < LED_INDIVIDUALS_COUNT; j++)
                 for (uint8_t k = 0; k < 2; k++)
+                {
                     LED_PIN_PAIRS[i][j][k] = layout[i][j][k];
+                    if (k == 0)
+                        LED_GROUP_PINS[i] = layout[i][j][k];
+                    else
+                        LED_INDIVIDUAL_PINS[j] = layout[i][j][k];
+                }
 
-        //set all led pins to output
+        // set all led pins to output
         for (int groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             pinMode(LED_GROUP_PINS[groupPin], OUTPUT);
         for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
@@ -67,7 +44,7 @@ public:
 
         BLINK_DELAY_MS = blinkDelay;
 
-        //link to Settings class
+        // link to Settings class
         SETTINGS = Settings;
 
         initTime = millis();
