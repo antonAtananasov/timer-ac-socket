@@ -151,7 +151,7 @@ public:
         uint8_t byteIndex = bitIndex / BITS_IN_ONE_BYTE;
 
         uint8_t byteAddress = EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES + byteIndex;
-        uint8_t bitNumber = bitIndex - byteAddress * BITS_IN_ONE_BYTE;
+        uint8_t bitNumber = bitIndex - byteIndex * BITS_IN_ONE_BYTE;
 
         if (byteAddress < EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES || byteAddress > EEPROM_SOCKET_ACTIVITY_END_BYTE_ADDRES)
             valid = false;

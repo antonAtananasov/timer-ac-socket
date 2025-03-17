@@ -168,13 +168,13 @@ public:
 
     bool displayTime(uint8_t hour, uint8_t minute)
     {
-        if (hour >= 0 && hour <= 24 && minute >= 0 && minute <= 60)
+        if (hour >= 0 && hour <= HOURS_IN_ONE_DAY && minute >= 0 && minute <= MINUTES_IN_ONE_HOUR)
         {
             hour = hour % 12;
             if (hour == 0)
                 hour = 12;
 
-            minute = (minute % 60) / 5;
+            minute = (minute % MINUTES_IN_ONE_HOUR) / FIVE_MINUTES;
             if (minute == 0)
                 minute = 12;
 

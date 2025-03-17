@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include "MyLedState.enum.h"
-#include "MyLedAndState.struct.h"
 #include "MyLedMatrix.class.h"
 #include "MySettings.class.h"
 #include "MyTimer.class.h"
@@ -82,13 +81,13 @@ public:
         }
         if (msg.startsWith("CLOCKLED"))
         {
-            MyLedAndState values = readLedAndState(msg);
-            successful = LED_MATRIX->setClockLed(values.led, values.state);
+            int *values = readCmdNumber(msg, 2);
+            successful = LED_MATRIX->setClockLed(values[0], (MyLedState)values[1]);
         }
         else if (msg.startsWith("SOCKETLED"))
         {
-            MyLedAndState values = readLedAndState(msg);
-            successful = LED_MATRIX->setSocketLed(values.led, values.state);
+            int *values = readCmdNumber(msg, 2);
+            successful = LED_MATRIX->setSocketLed(values[0], (MyLedState)values[1]);
         }
         // STATUSLED <STATE>
         // ALLLEDS <STATE>
@@ -110,7 +109,6 @@ public:
         else if (msg.startsWith("GETTIME"))
         {
             printTime();
-
             successful = true;
         }
         else if (msg.startsWith("SETTIME"))
@@ -118,9 +116,19 @@ public:
         // GETACTIVE <HH> <MM> <socket 1-5>
         // SETACTIVE <HH> <MM> <socket 1-5>
         else if (msg.startsWith("GETACTIVE"))
-            successful = false;
+        {
+            int *values = readCmdNumber(msg, 3);
+
+            successful = SETTINGS->getByteAndBitNumberForSocketActivity(values[0], values[1], values[2]).valid;
+
+            if (successful)
+                Serial.println(SETTINGS->getSocketActivity(values[0], values[1], values[2]));
+        }
         else if (msg.startsWith("SETACTIVE"))
-            successful = false;
+        {
+            int *values = readCmdNumber(msg, 4);
+            successful = SETTINGS->setSocketActivity(values[0], values[1], values[2], values[3]);
+        }
 
         // always at end
         Serial.println(successful ? "OK." : "Err.:" + msg);
@@ -144,12 +152,12 @@ public:
             separatorIndex = cmd.indexOf(SEPARATOR);
             cmd = cmd.substring(separatorIndex);
             cmd.trim();
-            
+
             valueIndex++;
-            
+
         } while (separatorIndex > -1 && valueIndex < numberCount);
-        
-        int* valuesPtr = values;
+
+        int *valuesPtr = values;
         return valuesPtr;
     }
 
@@ -171,28 +179,15 @@ public:
             Serial.println(messages[i]);
     }
 
-    MyLedAndState readLedAndState(String msg)
-    {
-        String cmd = msg.substring(msg.indexOf(SEPARATOR));
-        int separatorIndex = cmd.indexOf(SEPARATOR);
-        uint8_t led = cmd.substring(0, separatorIndex - 1).toInt();
-        MyLedState state = (MyLedState)readCmdNumber(cmd.substring(1));
-        return {led, state};
-    }
-
     bool setTime(String msg)
     {
-        int* values = readCmdNumber(msg, 3);        
+        int *values = readCmdNumber(msg, 3);
 
         bool successfulSettingUpdate = SETTINGS->setHour(values[0]) && SETTINGS->setMinute(values[1]) && SETTINGS->setSecond(values[2]);
         bool successfulTimerUpdate = successfulSettingUpdate && TIMER->setHour(values[0]) && TIMER->setMinute(values[1]) && TIMER->setSecond(values[2]) && TIMER->setMillisecond(0);
 
-        Serial.println(successfulSettingUpdate);
-        Serial.println(successfulTimerUpdate);
-
         return successfulTimerUpdate;
     }
-
     void printTime()
     {
         MyTime time = TIMER->getTime();

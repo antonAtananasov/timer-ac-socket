@@ -54,8 +54,14 @@ void loop()
     postSetup();
     SerialHandler.handleMessage();
 
+    //update time
     Timer.update();
     MyTime time = Timer.getTime();
+
+    //update sockets
+    //TODO: add real socket pin controller 
+    for (uint8_t i = 1; i <= SOCKETS_COUNT; i++)
+        LedMatrix.setSocketLed(i, (MyLedState)Settings.getSocketActivity(time.hour, (time.minute/5)*5,i));
 
     // autoshow time
     if (millis() - _lastTimeDisplay > TIME_SHOW_DELAY)
