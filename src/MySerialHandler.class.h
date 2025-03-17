@@ -106,15 +106,21 @@ public:
         else if (msg.startsWith("SOCKLOGIC"))
             successful = SETTINGS->setSocketsActiveLogic((bool)readCmdNumber(msg));
         // GETTIME
+        // SETTIME <h> <m> <s> <ms>
         else if (msg.startsWith("GETTIME"))
         {
             printTime();
 
             successful = true;
         }
-        // SETTIME <h> <m> <s> <ms>
         else if (msg.startsWith("SETTIME"))
             successful = setTime(msg);
+        // GETACTIVE <HH> <MM> <socket 1-5>
+        // SETACTIVE <HH> <MM> <socket 1-5>
+        else if (msg.startsWith("GETACTIVE"))
+            successful = false;
+        else if (msg.startsWith("SETACTIVE"))
+            successful = false;
 
         // always at end
         Serial.println(successful ? "OK." : "Err.:" + msg);
@@ -125,19 +131,42 @@ public:
         int separatorIndex = msg.indexOf(SEPARATOR);
         return msg.substring(separatorIndex).toInt();
     }
+    int *readCmdNumber(String msg, uint8_t numberCount)
+    {
+        int separatorIndex;
+        int valueIndex = 0;
+        int values[numberCount];
+        String cmd = msg;
+        do
+        {
+            values[valueIndex] = readCmdNumber(cmd);
+            Serial.println(values[valueIndex]);
+            separatorIndex = cmd.indexOf(SEPARATOR);
+            cmd = cmd.substring(separatorIndex);
+            cmd.trim();
+            
+            valueIndex++;
+            
+        } while (separatorIndex > -1 && valueIndex < numberCount);
+        
+        int* valuesPtr = values;
+        return valuesPtr;
+    }
 
     void help()
     {
-        uint8_t msgCount = 8;
+        uint8_t msgCount = 10;
         const char *messages[msgCount] = {
             "CLOCKLED <hour 1-12> <state 0-2>",
             "SOCKETLED <socket 1-5> <state 0-2>",
             "STATUSLED <state 0-2>",
-            "LEDGRPLOGIC <logic level 0/1>",
-            "LEDINDLOGIC <logic level 0/1>",
-            "SOCKLOGIC <logic level 0/1>",
+            "LEDGRPLOGIC <0/1>",
+            "LEDINDLOGIC <0/1>",
+            "SOCKLOGIC <0/1>",
             "GETTIME",
-            "SETTIME <HH> <MM> <SS>"};
+            "SETTIME <HH> <MM> <SS>",
+            "GETACTIVE <HH> <MM> <socket 1-5>",
+            "SETACTIVE <HH> <MM> <socket 1-5>"};
         for (uint8_t i = 0; i < msgCount; i++)
             Serial.println(messages[i]);
     }
@@ -153,28 +182,15 @@ public:
 
     bool setTime(String msg)
     {
-        int separatorIndex;
-        int valueIndex = 0;
-        uint16_t values[3] = {0, 0, 0};
-        String cmd = msg;
-        do
-        {
-            values[valueIndex] = readCmdNumber(cmd);
-            Serial.println(values[valueIndex]);
-            separatorIndex = cmd.indexOf(SEPARATOR);
-            cmd = cmd.substring(separatorIndex);
-            cmd.trim();
-
-            valueIndex++;
-
-        } while (separatorIndex > -1 && valueIndex < 3);
+        int* values = readCmdNumber(msg, 3);        
 
         bool successfulSettingUpdate = SETTINGS->setHour(values[0]) && SETTINGS->setMinute(values[1]) && SETTINGS->setSecond(values[2]);
-        bool successfulTimerUpdate = false;
-        if (successfulSettingUpdate)
-            successfulTimerUpdate = TIMER->setHour(values[0]) && TIMER->setMinute(values[1]) && TIMER->setSecond(values[2]) && TIMER->setMillisecond(0);
+        bool successfulTimerUpdate = successfulSettingUpdate && TIMER->setHour(values[0]) && TIMER->setMinute(values[1]) && TIMER->setSecond(values[2]) && TIMER->setMillisecond(0);
 
-        return successfulSettingUpdate && successfulTimerUpdate;
+        Serial.println(successfulSettingUpdate);
+        Serial.println(successfulTimerUpdate);
+
+        return successfulTimerUpdate;
     }
 
     void printTime()
