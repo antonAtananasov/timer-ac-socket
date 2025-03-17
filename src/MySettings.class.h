@@ -5,6 +5,7 @@
 #include <EEPROM.h>
 #include "MyConstants.const.h"
 #include "UserSettings.const.h"
+#include "MyByteAndBitNumber.struct.h"
 
 class MySettings
 {
@@ -36,7 +37,6 @@ public:
                setLedGroupActiveLogic(ledGroupActiveLogic) &&
                setLedIndividualActiveLogic(ledIndividualActiveLogic);
     }
-
     bool loadTimeFromEEPROM()
     {
         bool successfulTime = setHour(EEPROM.read(EEPROM_HOUR_BYTE_ADDRES)) && setMinute(EEPROM.read(EEPROM_MINUTE_BYTE_ADDRES)) && setSecond(EEPROM.read(EEPROM_SECOND_BYTE_ADDRES));
@@ -131,5 +131,42 @@ public:
         second = sec;
         return true;
     };
+
+    MyByteAndBitNumber getByteAndBitNumberForSocketActivity(uint8_t hour, uint8_t minute, uint8_t socket)
+    {
+        bool valid = true;
+        if (hour < 0 || hour >= HOURS_IN_ONE_DAY)
+            valid = false;
+        if (minute < 0 || minute >= MINUTES_IN_ONE_HOUR)
+            valid = false;
+        if (minute % FIVE_MINUTES != 0) // minutes have to be a multiple of five
+            valid = false;
+        if (socket < 1 || socket > SOCKETS_COUNT)
+            valid = false;
+
+        socket %= SOCKETS_COUNT;
+
+        uint16_t timeIndex = hour * MINUTES_IN_ONE_HOUR / FIVE_MINUTES + minute / FIVE_MINUTES;
+        uint16_t bitIndex = timeIndex * SOCKETS_COUNT + socket;
+        uint8_t byteIndex = bitIndex / BITS_IN_ONE_BYTE;
+
+        uint8_t byteAddress = EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES + byteIndex;
+        uint8_t bitNumber = bitIndex - byteAddress * BITS_IN_ONE_BYTE;
+
+        if (byteAddress < EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES || byteAddress > EEPROM_SOCKET_ACTIVITY_END_BYTE_ADDRES)
+            valid = false;
+
+        return {byteAddress, bitNumber, valid};
+    }
+    bool getSocketActivity(uint8_t hour, uint8_t minute, uint8_t socket)
+    {
+        MyByteAndBitNumber byteAndBitNumber = getByteAndBitNumberForSocketActivity(hour, minute, socket);
+        return readEEPROMBit(byteAndBitNumber.byteAddress, byteAndBitNumber.bitNumber);
+    }
+    bool setSocketActivity(uint8_t hour, uint8_t minute, uint8_t socket, bool activity)
+    {
+        MyByteAndBitNumber byteAndBitNumber = getByteAndBitNumberForSocketActivity(hour, minute, socket);
+        return byteAndBitNumber.valid && setEEPROMBit(byteAndBitNumber.byteAddress, byteAndBitNumber.bitNumber, activity);
+    }
 };
 #endif
