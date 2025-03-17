@@ -37,9 +37,9 @@ public:
                 }
 
         // set all led pins to output
-        for (int groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
+        for (uint8_t groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             pinMode(LED_GROUP_PINS[groupPin], OUTPUT);
-        for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
+        for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             pinMode(LED_INDIVIDUAL_PINS[individualLed], OUTPUT);
 
         BLINK_DELAY_MS = blinkDelay;
@@ -52,20 +52,20 @@ public:
 
     void update()
     {
-        for (int activeLedGroup = 0; activeLedGroup < LED_GROUPS_COUNT; activeLedGroup++)
+        for (uint8_t activeLedGroup = 0; activeLedGroup < LED_GROUPS_COUNT; activeLedGroup++)
         {
             // TODO: use direct port manipulation for faster switching
-            for (int groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
+            for (uint8_t groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             {
                 // only enable active group
                 digitalWrite(LED_GROUP_PINS[groupPin], !SETTINGS->getLedGroupActiveLogic());
             }
-            for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
+            for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
                 // only enable active group
                 digitalWrite(LED_INDIVIDUAL_PINS[individualLed], !SETTINGS->getLedIndividualActiveLogic());
             }
-            for (int individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
+            for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
                 int ledStateIndex = activeLedGroup * LED_INDIVIDUALS_COUNT + individualLed;
                 MyLedState ledState = ledStates[ledStateIndex];
@@ -98,7 +98,7 @@ public:
         return false;
     }
 
-    bool setClockLed(int hour, MyLedState state)
+    bool setClockLed(uint8_t hour, MyLedState state)
     {
         if (hour >= 1 && hour <= CLOCK_LEDS_COUNT && isStateValid(state))
         {
@@ -112,7 +112,7 @@ public:
         }
     }
 
-    bool setSocketLed(int socket, MyLedState state)
+    bool setSocketLed(uint8_t socket, MyLedState state)
     {
         if (socket >= 1 && socket <= SOCKET_LEDS_COUNT && isStateValid(state))
         {
@@ -135,7 +135,7 @@ public:
         else
             return false;
     }
-    MyLedState getClockLed(int hour)
+    MyLedState getClockLed(uint8_t hour)
     {
         if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
             return ledStates[hour - 1];
@@ -144,7 +144,7 @@ public:
         return UNKNOWN;
     }
 
-    MyLedState getSocketLed(int socket)
+    MyLedState getSocketLed(uint8_t socket)
     {
         if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
             return ledStates[CLOCK_LEDS_COUNT + socket - 1];

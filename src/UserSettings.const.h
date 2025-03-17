@@ -6,7 +6,7 @@
 
 //  Time keeping
 #define TIME_SHOW_DELAY MS_IN_ONE_SECOND //delay between led matrix updates when displaying current time
-#define TIME_SAVE_DELAY MS_IN_ONE_MINUTE * FIVE_MINUTES //delay between saving current time to EEPROM
+#define TIME_SAVE_DELAY MS_IN_ONE_MINUTE * FIVE_MINUTES //delay between saving current time to EEPROM // saveToEEPROMIntervalMs = 0 means do not save
 
 //  Display settings
 #define LED_BLINK_DELAY_MS 350 //how long an LED stays on and then off in ms when its supposed to blink
