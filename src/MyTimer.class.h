@@ -7,13 +7,12 @@
 #include "MyConstants.const.h"
 #include "UserSettings.const.h"
 
-
 class MyTimer
 {
 private:
     uint8_t hour = 0, minute = 0, second = 0;
     uint16_t millisecond = 0;
-    unsigned long startTime;
+    unsigned long startTime = 0, lastUpdate = 0;
     unsigned long SAVE_TO_EEPROM_INTERVAL_MS = TIME_SAVE_DELAY;
     unsigned long lastTimeSave = 0;
     MySettings *SETTINGS;
@@ -21,7 +20,6 @@ private:
 public:
     MyTimer(uint8_t hour, uint8_t minute, uint8_t second, MySettings *Settings)
     {
-        // saveToEEPROMIntervalMs = 0 means do not save
         startTime = millis();
 
         setHour(hour);
@@ -33,22 +31,32 @@ public:
 
     void update()
     {
-        unsigned long ms = millis() - startTime;
-        unsigned long sec = ms / MS_IN_ONE_SECOND;
-        unsigned long min = sec / SECONDS_IN_ONE_MINUTE;
-        unsigned long hr = min / MINUTES_IN_ONE_HOUR;
+        unsigned long currentMs = millis();
+        unsigned long ms = currentMs - lastUpdate;
+        uint8_t elapsedDays = ms / MS_IN_ONE_DAY;
+        uint8_t elapsedHours = (ms - elapsedDays * MS_IN_ONE_DAY) / MS_IN_ONE_HOUR;
+        uint8_t elapsedMinutes = (ms - elapsedDays * MS_IN_ONE_DAY - elapsedHours * MS_IN_ONE_HOUR) / MS_IN_ONE_MINUTE;
+        uint8_t elapsedSeconds = (ms - elapsedDays * MS_IN_ONE_DAY - elapsedHours * MS_IN_ONE_HOUR - elapsedMinutes * MS_IN_ONE_MINUTE) / MS_IN_ONE_SECOND;
+        unsigned long elapsedMs = (ms - elapsedDays * MS_IN_ONE_DAY - elapsedHours * MS_IN_ONE_HOUR - elapsedMinutes * MS_IN_ONE_MINUTE - elapsedSeconds * MS_IN_ONE_SECOND);
 
-        // loopbacks
-        ms %= MS_IN_ONE_SECOND;
-        sec %= SECONDS_IN_ONE_MINUTE;
-        min %= MINUTES_IN_ONE_HOUR;
-        hr %= HOURS_IN_ONE_DAY;
+        elapsedMs += millisecond;
+
+        elapsedSeconds += second + elapsedMs / MS_IN_ONE_SECOND;
+        elapsedMs %= MS_IN_ONE_SECOND;
+
+        elapsedMinutes += minute + elapsedSeconds / SECONDS_IN_ONE_MINUTE;
+        elapsedSeconds %= SECONDS_IN_ONE_MINUTE;
+
+        elapsedHours += hour + elapsedMinutes / MINUTES_IN_ONE_HOUR;
+        elapsedMinutes %= MINUTES_IN_ONE_HOUR;
+
+        elapsedHours %= HOURS_IN_ONE_DAY;
 
         // sets
-        setHour(hr);
-        setMinute(min);
-        setSecond(sec);
-        setMillisecond(ms);
+        setHour(elapsedHours);
+        setMinute(elapsedMinutes);
+        setSecond(elapsedSeconds);
+        setMillisecond(elapsedMs);
 
         // autosave time
         if (SAVE_TO_EEPROM_INTERVAL_MS > 0)
@@ -59,6 +67,8 @@ public:
                 SETTINGS->setSecond(second);
                 lastTimeSave = millis();
             }
+
+        lastUpdate = currentMs;
     }
 
     bool setHour(uint8_t hr)
@@ -85,7 +95,7 @@ public:
         second = sec;
         return true;
     }
-    bool setMillisecond(uint8_t ms)
+    bool setMillisecond(uint16_t ms)
     {
         if (ms < 0 || ms > MS_IN_ONE_SECOND)
             return false;
