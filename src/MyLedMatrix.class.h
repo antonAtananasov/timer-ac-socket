@@ -52,18 +52,21 @@ public:
 
     void update()
     {
+        bool ledIndividualActiveLogic = SETTINGS->getLedIndividualActiveLogic();
+        bool ledGroupActiveLogic = SETTINGS->getLedGroupActiveLogic();
+
         for (uint8_t activeLedGroup = 0; activeLedGroup < LED_GROUPS_COUNT; activeLedGroup++)
         {
             // TODO: use direct port manipulation for faster switching
             for (uint8_t groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             {
                 // only enable active group
-                digitalWrite(LED_GROUP_PINS[groupPin], !SETTINGS->getLedGroupActiveLogic());
+                digitalWrite(LED_GROUP_PINS[groupPin], !ledGroupActiveLogic);
             }
             for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
                 // only enable active group
-                digitalWrite(LED_INDIVIDUAL_PINS[individualLed], !SETTINGS->getLedIndividualActiveLogic());
+                digitalWrite(LED_INDIVIDUAL_PINS[individualLed], !ledIndividualActiveLogic);
             }
             for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             {
@@ -74,18 +77,18 @@ public:
                 int ledIndividualPin = LED_PIN_PAIRS[activeLedGroup][individualLed][1];
 
                 // enable led group
-                digitalWrite(ledGroupPin, SETTINGS->getLedGroupActiveLogic());
+                digitalWrite(ledGroupPin, ledGroupActiveLogic);
 
                 // enable led with corresponding state
                 if (ledState == LED_ON)
-                    digitalWrite(ledIndividualPin, SETTINGS->getLedIndividualActiveLogic());
+                    digitalWrite(ledIndividualPin, ledIndividualActiveLogic);
                 else if (ledState == LED_BLINK)
                 {
                     bool blinkState = ((millis() - initTime) / BLINK_DELAY_MS) % 2 == 0; // on for BLINK_DELAY_MS, then off for BLINK_DELAY_MS
-                    digitalWrite(ledIndividualPin, blinkState ? SETTINGS->getLedIndividualActiveLogic() : !SETTINGS->getLedIndividualActiveLogic());
+                    digitalWrite(ledIndividualPin, blinkState ? ledIndividualActiveLogic : !ledIndividualActiveLogic);
                 }
                 else // if (ledState == LED_OFF) or unknown
-                    digitalWrite(ledIndividualPin, !SETTINGS->getLedIndividualActiveLogic());
+                    digitalWrite(ledIndividualPin, !ledIndividualActiveLogic);
             }
         }
     }
@@ -120,10 +123,7 @@ public:
             return true;
         }
         else
-        {
-            Serial.println(F("Invalid socket led"));
-            return false;
-        }
+        return false;
     }
     bool setStatusLed(MyLedState state)
     {
@@ -140,7 +140,6 @@ public:
         if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
             return ledStates[hour - 1];
 
-        Serial.println(F("Invalid hour led. Returning UNKNOWN."));
         return UNKNOWN;
     }
 
@@ -149,7 +148,6 @@ public:
         if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
             return ledStates[CLOCK_LEDS_COUNT + socket - 1];
 
-        Serial.println(F("Invalid socket led. Returning 'false'."));
         return UNKNOWN;
     }
     MyLedState getStatusLed()

@@ -14,8 +14,6 @@ private:
          LED_INDIVIDUAL_ACTIVE_LOGIC = DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC,
          SOCKETS_ACTIVE_LOGIC = DEFAULT_SOCKET_ACTIVE_LOGIC;
 
-    uint8_t hour = 0, minute = 0, second = 0;
-
 public:
     MySettings(bool loadLogicLevelsFromEEPROMNow, bool loadTimeFromEEPROMNow)
     {
@@ -39,17 +37,17 @@ public:
     }
     bool loadTimeFromEEPROM()
     {
-        bool successfulTime = setHour(EEPROM.read(EEPROM_HOUR_BYTE_ADDRES)) && setMinute(EEPROM.read(EEPROM_MINUTE_BYTE_ADDRES)) && setSecond(EEPROM.read(EEPROM_SECOND_BYTE_ADDRES));
+        bool successfulTime = isSavedTimeValid();
         if (successfulTime)
         {
             Serial.print(F("Time is "));
-            Serial.print(hour);
+            Serial.print(getSavedHour());
             Serial.print(' ');
-            Serial.print(minute);
+            Serial.print(getSavedMinute());
             Serial.println();
         }
         else
-            Serial.println(F("Unable to set time"));
+            Serial.println(F("Unable to load time"));
         return successfulTime;
     }
 
@@ -100,38 +98,68 @@ public:
     bool getLedIndividualActiveLogic() { return LED_INDIVIDUAL_ACTIVE_LOGIC; }
     bool getSocketsActiveLogic() { return SOCKETS_ACTIVE_LOGIC; }
 
-    uint8_t getHour() { return hour; };
-    uint8_t getMinute() { return minute; };
-    uint8_t getSecond() { return second; };
+    uint8_t getSavedHour()
+    {
+        uint8_t hour = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
+        if (hour < 1 || hour >= HOURS_IN_ONE_DAY)
+        {
+            saveHour(0);
+            hour = 0;
+        }
+        return hour;
+    };
+    uint8_t getSavedMinute()
+    {
+        uint8_t minute = EEPROM.read(EEPROM_MINUTE_BYTE_ADDRES);
+        if (minute < 1 || minute >= MINUTES_IN_ONE_HOUR)
+        {
+            saveMinute(0);
+            minute = 0;
+        }
+        return minute;
+    };
+    uint8_t getSavedSecond()
+    {
+        uint8_t second = EEPROM.read(EEPROM_SECOND_BYTE_ADDRES);
+        if (second < 1 || second >= SECONDS_IN_ONE_MINUTE)
+        {
+            saveSecond(0);
+            second = 0;
+        }
+        return second;
+    };
 
-    bool setHour(uint8_t hr)
+    bool saveHour(uint8_t hr)
     {
         if (hr < 0 || hr > HOURS_IN_ONE_DAY)
             return false;
 
         EEPROM.write(EEPROM_HOUR_BYTE_ADDRES, hr);
-        hour = hr;
         return true;
     };
-    bool setMinute(uint8_t min)
+    bool saveMinute(uint8_t min)
     {
         if (min < 0 || min > MINUTES_IN_ONE_HOUR)
             return false;
 
         EEPROM.write(EEPROM_MINUTE_BYTE_ADDRES, min);
-        minute = min;
         return true;
     };
-    bool setSecond(uint8_t sec)
+    bool saveSecond(uint8_t sec)
     {
         if (sec < 0 || sec > SECONDS_IN_ONE_MINUTE)
             return false;
 
         EEPROM.write(EEPROM_SECOND_BYTE_ADDRES, sec);
-        second = sec;
         return true;
     };
-
+    bool isSavedTimeValid(){
+        uint8_t hour = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
+        uint8_t minute = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
+        uint8_t second = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
+        return hour < HOURS_IN_ONE_DAY && minute < MINUTES_IN_ONE_HOUR && second < SECONDS_IN_ONE_MINUTE;
+    }
+    
     MyByteAndBitNumber getByteAndBitNumberForSocketActivity(uint8_t hour, uint8_t minute, uint8_t socket)
     {
         bool valid = true;

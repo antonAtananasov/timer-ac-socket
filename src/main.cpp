@@ -4,6 +4,7 @@
 #include "MyLedMatrix.class.h"
 #include "MyTimer.class.h"
 #include "MyLedState.enum.h"
+#include "MySocketManager.class.h"
 #include "UserSettings.const.h"
 
 // IMPORTANT
@@ -24,6 +25,8 @@ MyLedMatrix LedMatrix(
     LED_BLINK_DELAY_MS);
 MyTimer Timer(0, 0, 0, &Settings);
 MySerialHandler SerialHandler(&LedMatrix, &Settings, &Timer);
+MySocketManager SocketManager(&Settings, &LedMatrix, &Timer);
+
 
 bool _postSetup = false;
 void postSetup() // this function exists because setup() needs to begin Serial before main objects are instantiated, but they also have some setup to do before loop()
@@ -37,9 +40,9 @@ void postSetup() // this function exists because setup() needs to begin Serial b
     LedMatrix.testLEDs();
     LedMatrix.setStatusLed(LED_BLINK);
 
-    Timer.setSecond(Settings.getSecond());
-    Timer.setMinute(Settings.getMinute());
-    Timer.setHour(Settings.getHour());
+    Timer.setSecond(Settings.getSavedSecond());
+    Timer.setMinute(Settings.getSavedMinute());
+    Timer.setHour(Settings.getSavedHour());
 
     SerialHandler.flush();
     SerialHandler.motd();
@@ -59,16 +62,10 @@ void loop()
     MyTime time = Timer.getTime();
 
     //update sockets
-    //TODO: add real socket pin controller 
-    for (uint8_t i = 1; i <= SOCKETS_COUNT; i++)
-        LedMatrix.setSocketLed(i, (MyLedState)Settings.getSocketActivity(time.hour, (time.minute/5)*5,i));
+    SocketManager.update();
 
     // autoshow time
-    if (millis() - _lastTimeDisplay > TIME_SHOW_DELAY)
-    {
-        LedMatrix.displayTime(time.hour, time.minute);
-        _lastTimeDisplay = millis();
-    }
+    LedMatrix.displayTime(time.hour, time.minute);
 
     // always at end of loop
     LedMatrix.update();

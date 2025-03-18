@@ -183,7 +183,7 @@ public:
     {
         int *values = readCmdNumber(msg, 3);
 
-        bool successfulSettingUpdate = SETTINGS->setHour(values[0]) && SETTINGS->setMinute(values[1]) && SETTINGS->setSecond(values[2]);
+        bool successfulSettingUpdate = SETTINGS->saveHour(values[0]) && SETTINGS->saveMinute(values[1]) && SETTINGS->saveSecond(values[2]);
         bool successfulTimerUpdate = successfulSettingUpdate && TIMER->setHour(values[0]) && TIMER->setMinute(values[1]) && TIMER->setSecond(values[2]) && TIMER->setMillisecond(0);
 
         return successfulTimerUpdate;

@@ -62,9 +62,9 @@ public:
         if (SAVE_TO_EEPROM_INTERVAL_MS > 0)
             if (millis() - lastTimeSave > SAVE_TO_EEPROM_INTERVAL_MS)
             {
-                SETTINGS->setHour(hour);
-                SETTINGS->setMinute(minute);
-                SETTINGS->setSecond(second);
+                SETTINGS->saveHour(hour);
+                SETTINGS->saveMinute(minute);
+                SETTINGS->saveSecond(second);
                 lastTimeSave = millis();
             }
 
