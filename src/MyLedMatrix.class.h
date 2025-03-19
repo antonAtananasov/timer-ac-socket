@@ -140,7 +140,7 @@ public:
         if (hour >= 1 && hour <= CLOCK_LEDS_COUNT)
             return ledStates[hour - 1];
 
-        return UNKNOWN;
+        return UNKNOWN_LED_STATE;
     }
 
     MyLedState getSocketLed(uint8_t socket)
@@ -148,7 +148,7 @@ public:
         if (socket >= 1 && socket <= SOCKET_LEDS_COUNT)
             return ledStates[CLOCK_LEDS_COUNT + socket - 1];
 
-        return UNKNOWN;
+        return UNKNOWN_LED_STATE;
     }
     MyLedState getStatusLed()
     {

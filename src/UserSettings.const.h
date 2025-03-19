@@ -8,15 +8,22 @@
 #define TIME_SHOW_DELAY MS_IN_ONE_SECOND //delay between led matrix updates when displaying current time
 #define TIME_SAVE_DELAY MS_IN_ONE_MINUTE * FIVE_MINUTES //delay between saving current time to EEPROM // saveToEEPROMIntervalMs = 0 means do not save
 
-//  Display settings
+//  Timing settings
 #define LED_BLINK_DELAY_MS 350UL //how long an LED stays on and then off in ms when its supposed to blink
+#define INPUT_INDICATION_DELAY 100UL //how long an LED stays on before returning to its state when an input action is detected
+#define BUTTON_LONG_PRESS_DELAY 300UL //how long to hold button to register long press instead of normal press
+#define BUTTON_DEBOUNCE_DELAY 50UL //how long to wait for button to stabilize
 
 
 // PHYSICAL CONFIGURATION
 //  Wiring Active logic configuration
+#define DEFAULT_BUTTON_ACTIVE_LOGIC HIGH // Logic level for push button not valid in MEMORY CONFIGURATION below
 #define DEFAULT_LED_GROUP_ACTIVE_LOGIC HIGH // LED Logic level for enabling a LED group when not valid in MEMORY CONFIGURATION below
 #define DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC HIGH // LED Logic level for enabling an individual LED in a group when not valid in MEMORY CONFIGURATION below
 #define DEFAULT_SOCKET_ACTIVE_LOGIC LOW // Logic level for enabling an individual socket when not valid in MEMORY CONFIGURATION below
+
+// Input controls wiring configuration
+#define PUSH_BUTTON_PIN A3
 
 // Socket relays wiring configuration
 #define SOCKET_RELAY_1_PIN 11u
@@ -66,8 +73,10 @@
 #define EEPROM_LOGIC_LEVEL_LED_GROUP_BIT_NUMBER 0u // LED Logic level bit for enabling a LED group
 #define EEPROM_LOGIC_LEVEL_LED_INDIVIDUAL_BIT_NUMBER 1u // LED Logic level bit for enabling an individual LED in a group
 #define EEPROM_LOGIC_LEVEL_SOCKET_BIT_NUMBER 2u // Logic level bit for enabling an individual socket
+#define EEPROM_LOGIC_LEVEL_BUTTON_BIT_NUMBER 3u // Logic level bit for push button
 //      Active state
 #define EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES 4u // start address for storing when each socket should be active for every 5min period in 24hrs (takes EEPROM_SOCKET_ACTIVITY_BYTES_TOTAL (180) bytes)
+
 
 // Ensure a valid config
 #include "MyValidation.validator.h"

@@ -12,7 +12,8 @@ class MySettings
 private:
     bool LED_GROUP_ACTIVE_LOGIC = DEFAULT_LED_GROUP_ACTIVE_LOGIC,
          LED_INDIVIDUAL_ACTIVE_LOGIC = DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC,
-         SOCKETS_ACTIVE_LOGIC = DEFAULT_SOCKET_ACTIVE_LOGIC;
+         SOCKETS_ACTIVE_LOGIC = DEFAULT_SOCKET_ACTIVE_LOGIC,
+         BUTTON_ACTIVE_LOGIC = DEFAULT_BUTTON_ACTIVE_LOGIC;
 
 public:
     MySettings(bool loadLogicLevelsFromEEPROMNow, bool loadTimeFromEEPROMNow)
@@ -93,10 +94,19 @@ public:
 
         return successful;
     }
+    bool setButtonActiveLogic(bool level)
+    {
+        bool successful = setEEPROMBit(EEPROM_LOGIC_LEVELS_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_BUTTON_BIT_NUMBER, level);
+        if (successful)
+            BUTTON_ACTIVE_LOGIC = level;
+
+        return successful;
+    }
 
     bool getLedGroupActiveLogic() { return LED_GROUP_ACTIVE_LOGIC; }
     bool getLedIndividualActiveLogic() { return LED_INDIVIDUAL_ACTIVE_LOGIC; }
     bool getSocketsActiveLogic() { return SOCKETS_ACTIVE_LOGIC; }
+    bool getButtonActiveLogic() { return BUTTON_ACTIVE_LOGIC; }
 
     uint8_t getSavedHour()
     {
@@ -153,13 +163,14 @@ public:
         EEPROM.write(EEPROM_SECOND_BYTE_ADDRES, sec);
         return true;
     };
-    bool isSavedTimeValid(){
+    bool isSavedTimeValid()
+    {
         uint8_t hour = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
         uint8_t minute = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
         uint8_t second = EEPROM.read(EEPROM_HOUR_BYTE_ADDRES);
         return hour < HOURS_IN_ONE_DAY && minute < MINUTES_IN_ONE_HOUR && second < SECONDS_IN_ONE_MINUTE;
     }
-    
+
     MyByteAndBitNumber getByteAndBitNumberForSocketActivity(uint8_t hour, uint8_t minute, uint8_t socket)
     {
         bool valid = true;

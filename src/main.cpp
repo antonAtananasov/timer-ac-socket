@@ -5,6 +5,7 @@
 #include "MyTimer.class.h"
 #include "MyLedState.enum.h"
 #include "MySocketManager.class.h"
+#include "MyInputHandler.class.h"
 #include "UserSettings.const.h"
 
 // IMPORTANT
@@ -20,13 +21,13 @@ void setup()
 // init objects
 MySettings Settings(true, true);
 MyLedMatrix LedMatrix(
-    &Settings, 
+    &Settings,
     LED_PIN_PAIRS_LAYOUT,
     LED_BLINK_DELAY_MS);
 MyTimer Timer(0, 0, 0, &Settings);
 MySerialHandler SerialHandler(&LedMatrix, &Settings, &Timer);
 MySocketManager SocketManager(&Settings, &LedMatrix, &Timer);
-
+MyInputHandler InputHandler(&Settings);
 
 bool _postSetup = false;
 void postSetup() // this function exists because setup() needs to begin Serial before main objects are instantiated, but they also have some setup to do before loop()
@@ -38,6 +39,7 @@ void postSetup() // this function exists because setup() needs to begin Serial b
     Settings.loadTimeFromEEPROM();
 
     LedMatrix.testLEDs();
+    // start blinking to indicate running behind time by default
     LedMatrix.setStatusLed(LED_BLINK);
 
     Timer.setSecond(Settings.getSavedSecond());
@@ -45,7 +47,7 @@ void postSetup() // this function exists because setup() needs to begin Serial b
     Timer.setHour(Settings.getSavedHour());
 
     SerialHandler.flush();
-    SerialHandler.motd();
+    SerialHandler.printMOTD();
 
     _postSetup = true;
 }
@@ -57,15 +59,31 @@ void loop()
     postSetup();
     SerialHandler.handleMessage();
 
-    //update time
+    // update time
     Timer.update();
     MyTime time = Timer.getTime();
 
-    //update sockets
-    SocketManager.update();
-
     // autoshow time
     LedMatrix.displayTime(time.hour, time.minute);
+
+    // handle inputs
+    MyButtonAction buttonAction = InputHandler.checkButtonAction();
+
+    if (buttonAction == SHORT_PRESS)
+        SerialHandler.printTime();
+    else if (buttonAction == LONG_PRESS)
+        SerialHandler.printMOTD();
+
+    if (InputHandler.getLastButtonActionTime() > 0)
+    {
+        if ((buttonAction == BUTTON_DOWN || buttonAction == SHORT_PRESS || buttonAction == LONG_PRESS) && millis() - InputHandler.getLastButtonActionTime() < INPUT_INDICATION_DELAY)
+            LedMatrix.setStatusLed(LED_ON);
+        else
+            LedMatrix.setStatusLed(LED_OFF);
+    }
+
+    // update sockets
+    SocketManager.update();
 
     // always at end of loop
     LedMatrix.update();

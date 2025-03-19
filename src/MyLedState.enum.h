@@ -3,9 +3,9 @@
 #include <Arduino.h>
 enum MyLedState : uint8_t
 {
-    UNKNOWN = 255,
     LED_OFF = false,
     LED_ON = true,
-    LED_BLINK = 2
+    LED_BLINK = 2,
+    UNKNOWN_LED_STATE = 255
 };
 #endif

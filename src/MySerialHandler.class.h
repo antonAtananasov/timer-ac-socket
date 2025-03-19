@@ -30,7 +30,7 @@ public:
         ECHO = echo;
     };
 
-    void motd()
+    void printMOTD()
     {
         Serial.println(F("Type \"HELP\" for info."));
     }
@@ -98,12 +98,15 @@ public:
         // LEDGRPLOGIC <0/1>
         // LEDINDLOGIC <0/1>
         // SOCKLOGIC <0/1>
+        // BTNLOGIC <0/1>
         else if (msg.startsWith("LEDGRPLOGIC"))
             successful = SETTINGS->setLedGroupActiveLogic((bool)readCmdNumber(msg));
         else if (msg.startsWith("LEDINDLOGIC"))
             successful = SETTINGS->setLedIndividualActiveLogic((bool)readCmdNumber(msg));
         else if (msg.startsWith("SOCKLOGIC"))
             successful = SETTINGS->setSocketsActiveLogic((bool)readCmdNumber(msg));
+        else if (msg.startsWith("BTNLOGIC"))
+            successful = SETTINGS->setButtonActiveLogic((bool)readCmdNumber(msg));
         // GETTIME
         // SETTIME <h> <m> <s> <ms>
         else if (msg.startsWith("GETTIME"))
@@ -163,7 +166,7 @@ public:
 
     void help()
     {
-        uint8_t msgCount = 10;
+        uint8_t msgCount = 11;
         const char *messages[msgCount] = {
             "CLOCKLED <hour 1-12> <state 0-2>",
             "SOCKETLED <socket 1-5> <state 0-2>",
@@ -171,6 +174,7 @@ public:
             "LEDGRPLOGIC <0/1>",
             "LEDINDLOGIC <0/1>",
             "SOCKLOGIC <0/1>",
+            "BTNLOGIC <0/1>",
             "GETTIME",
             "SETTIME <HH> <MM> <SS>",
             "GETACTIVE <HH> <MM> <socket 1-5>",
