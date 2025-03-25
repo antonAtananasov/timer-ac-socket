@@ -6,6 +6,7 @@
 #include "MyConstants.const.h"
 #include "UserSettings.const.h"
 #include "MyByteAndBitNumber.struct.h"
+#include "MyErrorCode.enum.h"
 
 class MySettings
 {
@@ -15,11 +16,17 @@ private:
          SOCKETS_ACTIVE_LOGIC = DEFAULT_SOCKET_ACTIVE_LOGIC,
          BUTTON_ACTIVE_LOGIC = DEFAULT_BUTTON_ACTIVE_LOGIC;
 
+    MyErrorCode errorCode = ERRORCODE_REBOOT;
+
 public:
     MySettings(bool loadLogicLevelsFromEEPROMNow, bool loadTimeFromEEPROMNow)
     {
-        if (loadLogicLevelsFromEEPROMNow)
-            loadLogicLevelsFromEEPROM();
+        if (loadLogicLevelsFromEEPROMNow && !loadLogicLevelsFromEEPROM())
+            {
+                saveHour(0);
+                saveMinute(0);
+                saveSecond(0);
+            }
         if (loadTimeFromEEPROMNow)
             loadTimeFromEEPROM();
     };
@@ -141,7 +148,7 @@ public:
 
     bool saveHour(uint8_t hr)
     {
-        if (hr < 0 || hr > HOURS_IN_ONE_DAY)
+        if (hr < 0 || hr >= HOURS_IN_ONE_DAY)
             return false;
 
         EEPROM.write(EEPROM_HOUR_BYTE_ADDRES, hr);
@@ -149,7 +156,7 @@ public:
     };
     bool saveMinute(uint8_t min)
     {
-        if (min < 0 || min > MINUTES_IN_ONE_HOUR)
+        if (min < 0 || min >= MINUTES_IN_ONE_HOUR)
             return false;
 
         EEPROM.write(EEPROM_MINUTE_BYTE_ADDRES, min);
@@ -157,7 +164,7 @@ public:
     };
     bool saveSecond(uint8_t sec)
     {
-        if (sec < 0 || sec > SECONDS_IN_ONE_MINUTE)
+        if (sec < 0 || sec >= SECONDS_IN_ONE_MINUTE)
             return false;
 
         EEPROM.write(EEPROM_SECOND_BYTE_ADDRES, sec);
@@ -207,5 +214,17 @@ public:
         MyByteAndBitNumber byteAndBitNumber = getByteAndBitNumberForSocketActivity(hour, minute, socket);
         return byteAndBitNumber.valid && setEEPROMBit(byteAndBitNumber.byteAddress, byteAndBitNumber.bitNumber, activity);
     }
+
+    bool setErrorCode(MyErrorCode code)
+    {
+        if (code != ERRORCODE_NONE)
+        {
+            Serial.print(F("Error "));
+            Serial.println(code);
+        }
+        errorCode = code;
+        return true;
+    }
+    MyErrorCode getErrorCode() { return errorCode; }
 };
 #endif

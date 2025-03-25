@@ -9,7 +9,8 @@
 #define TIME_SAVE_DELAY MS_IN_ONE_MINUTE * FIVE_MINUTES //delay between saving current time to EEPROM // saveToEEPROMIntervalMs = 0 means do not save
 
 //  Timing settings
-#define LED_BLINK_DELAY_MS 350UL //how long an LED stays on and then off in ms when its supposed to blink
+#define LED_BLINK_SLOW_DELAY_MS 350UL //how long an LED stays on and then off in ms when its supposed to blink quickly
+#define LED_BLINK_FAST_DELAY_MS 150UL //how long an LED stays on and then off in ms when its supposed to blink slowly
 #define INPUT_INDICATION_DELAY 100UL //how long an LED stays on before returning to its state when an input action is detected
 #define BUTTON_LONG_PRESS_DELAY 300UL //how long to hold button to register long press instead of normal press
 #define BUTTON_DEBOUNCE_DELAY 50UL //how long to wait for button to stabilize

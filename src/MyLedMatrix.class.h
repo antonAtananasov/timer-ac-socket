@@ -6,7 +6,7 @@
 #include "MyLedState.enum.h"
 #include "UserSettings.const.h"
 
-const uint8_t MY_LED_STATES[] = {LED_OFF, LED_ON, LED_BLINK};
+const uint8_t MY_LED_STATES[] = {LED_OFF, LED_ON, LED_BLINK_SLOW, LED_BLINK_FAST};
 
 class MyLedMatrix
 {
@@ -19,10 +19,10 @@ private:
     unsigned long initTime;
 
 public:
-    unsigned long BLINK_DELAY_MS;
+    unsigned long BLINK_SLOW_DELAY_MS, BLINK_FAST_DELAY_MS;
     MySettings *SETTINGS;
 
-    MyLedMatrix(MySettings *Settings, const uint8_t layout[6][3][2], unsigned long blinkDelay)
+    MyLedMatrix(MySettings *Settings, const uint8_t layout[6][3][2], unsigned long blinkSlowDelay, unsigned long blinkFastDelay)
     {
         // build logical led pin pairs
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)
@@ -42,7 +42,8 @@ public:
         for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             pinMode(LED_INDIVIDUAL_PINS[individualLed], OUTPUT);
 
-        BLINK_DELAY_MS = blinkDelay;
+        BLINK_SLOW_DELAY_MS = blinkSlowDelay;
+        BLINK_FAST_DELAY_MS = blinkFastDelay;
 
         // link to Settings class
         SETTINGS = Settings;
@@ -82,9 +83,9 @@ public:
                 // enable led with corresponding state
                 if (ledState == LED_ON)
                     digitalWrite(ledIndividualPin, ledIndividualActiveLogic);
-                else if (ledState == LED_BLINK)
+                else if (ledState == LED_BLINK_SLOW || ledState == LED_BLINK_FAST)
                 {
-                    bool blinkState = ((millis() - initTime) / BLINK_DELAY_MS) % 2 == 0; // on for BLINK_DELAY_MS, then off for BLINK_DELAY_MS
+                    bool blinkState = ((millis() - initTime) / (ledState == LED_BLINK_SLOW ? BLINK_SLOW_DELAY_MS : BLINK_FAST_DELAY_MS)) % 2 == 0; 
                     digitalWrite(ledIndividualPin, blinkState ? ledIndividualActiveLogic : !ledIndividualActiveLogic);
                 }
                 else // if (ledState == LED_OFF) or unknown
@@ -110,9 +111,18 @@ public:
         }
         else
         {
-            Serial.println(F("Invalid hour led"));
+            Serial.print(F("Invalid hour led "));
+            Serial.println(hour);
             return false;
         }
+    }
+    bool setClockLeds(MyLedState state)
+    {
+        if (!isStateValid(state))
+            return false;
+        for (uint8_t i = 1; i <= CLOCK_LEDS_COUNT; i++)
+            setClockLed(i, state);
+        return true;
     }
 
     bool setSocketLed(uint8_t socket, MyLedState state)
@@ -123,7 +133,7 @@ public:
             return true;
         }
         else
-        return false;
+            return false;
     }
     bool setStatusLed(MyLedState state)
     {
@@ -179,7 +189,7 @@ public:
             for (uint8_t i = 1; i <= CLOCK_LEDS_COUNT; i++)
                 setClockLed(i, LED_OFF);
             setClockLed(hour, LED_ON);
-            setClockLed(minute, LED_BLINK);
+            setClockLed(minute, LED_BLINK_SLOW);
 
             return true;
         }

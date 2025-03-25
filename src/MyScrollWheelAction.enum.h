@@ -1,7 +1,7 @@
 #ifndef MyScrollWheelAction_ENUM
 #define MyScrollWheelAction_ENUM
 
-enum MyScrollWheelAction
+enum MyScrollWheelAction : uint8_t
 {
     SCROLL_NONE,
     SCROLL_CLOCKWISE,

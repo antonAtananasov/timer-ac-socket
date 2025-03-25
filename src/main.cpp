@@ -6,6 +6,7 @@
 #include "MyLedState.enum.h"
 #include "MySocketManager.class.h"
 #include "MyInputHandler.class.h"
+#include "MyProgram.class.h"
 #include "UserSettings.const.h"
 
 // IMPORTANT
@@ -18,6 +19,7 @@ MyTimer *Timer;
 MySerialHandler *SerialHandler;
 MySocketManager *SocketManager;
 MyInputHandler *InputHandler;
+MyProgram *Program;
 
 void setup()
 {
@@ -29,18 +31,15 @@ void setup()
     LedMatrix = new MyLedMatrix(
         Settings,
         LED_PIN_PAIRS_LAYOUT,
-        LED_BLINK_DELAY_MS);
+        LED_BLINK_SLOW_DELAY_MS,
+        LED_BLINK_FAST_DELAY_MS);
     Timer = new MyTimer(0, 0, 0, Settings);
     SerialHandler = new MySerialHandler(LedMatrix, Settings, Timer);
     SocketManager = new MySocketManager(Settings, LedMatrix, Timer);
     InputHandler = new MyInputHandler(Settings);
-
-    // Settings should load logic levels before led matrix is started
-    Settings->loadTimeFromEEPROM();
+    Program = new MyProgram(InputHandler, Settings, Timer, LedMatrix);
 
     LedMatrix->testLEDs();
-    // start blinking to indicate running behind time by default
-    LedMatrix->setStatusLed(LED_BLINK);
 
     Timer->setSecond(Settings->getSavedSecond());
     Timer->setMinute(Settings->getSavedMinute());
@@ -50,27 +49,22 @@ void setup()
     SerialHandler->printMOTD();
 }
 
-
 unsigned long _lastTimeDisplay = 0;
 void loop()
 {
-    // always at start of loop
-    SerialHandler->handleMessage();
-
-    // update time
+    // BEGIN "always at start of loop"
     Timer->update();
-    MyTime time = Timer->getTime();
-
-    // autoshow time
-    LedMatrix->displayTime(time.hour, time.minute);
-
+    // handle serial
+    SerialHandler->handleMessage();
     // handle inputs
-    // MyButtonAction buttonAction = InputHandler->checkButtonAction();
-    // MyScrollWheelAction scrollAction = InputHandler->checkScrollAction();
+    MyButtonAction buttonAction = InputHandler->checkButtonAction();
+    MyScrollWheelAction scrollAction = InputHandler->checkScrollAction();
+    // END "always at start of loop"
 
-    // update sockets
-    SocketManager->update();
+    Program->mainLoop(buttonAction, scrollAction);
 
-    // always at end of loop
+    // BEGIN "always at end of loop"
     LedMatrix->update();
+    SocketManager->update();
+    // END "always at end of loop"
 }

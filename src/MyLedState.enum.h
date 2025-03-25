@@ -5,7 +5,8 @@ enum MyLedState : uint8_t
 {
     LED_OFF = false,
     LED_ON = true,
-    LED_BLINK = 2,
+    LED_BLINK_SLOW,
+    LED_BLINK_FAST,
     UNKNOWN_LED_STATE = 255
 };
 #endif

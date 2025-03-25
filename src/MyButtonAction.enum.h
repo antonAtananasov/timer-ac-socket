@@ -1,7 +1,7 @@
 #ifndef MyButtonAction_ENUM
 #define MyButtonAction_ENUM
 
-enum MyButtonAction
+enum MyButtonAction : uint8_t
 {
     BUTTON_NONE,
     BUTTON_DOWN,

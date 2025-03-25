@@ -1,0 +1,20 @@
+#ifndef MyProgramMode_ENUM
+#define MyProgramMode_ENUM
+
+// last three bits are for submodes
+enum MyProgramMode : uint8_t
+{
+    PROGRAM_DISPLAY_TIME = 0b00000000u,
+
+    PROGRAM_SET_TIME = 0b00001000u,
+    PROGRAM_SET_TIME_HOUR = 0b00001001,
+    PROGRAM_SET_TIME_MINUTE = 0b00001010,
+    PROGRAM_SET_TIME_SECOND = 0b00001011,
+    PROGRAM_SET_TIME_AMPM = 0b00001100,
+
+    PROGRAM_SET_SOCKETS = 0b00010000,
+
+    PROGRAM_UNKNOWN_MODE = 255
+};
+
+#endif
