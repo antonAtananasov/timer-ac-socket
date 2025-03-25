@@ -26,6 +26,8 @@ public:
         buttonState = lastButtonState = !Settings->getButtonActiveLogic();
 
         pinMode(PUSH_BUTTON_PIN, INPUT);
+        pinMode(SCROLL_WHEEL_PIN1, INPUT);
+        pinMode(SCROLL_WHEEL_PIN2, INPUT);
     };
 
     MyButtonAction checkButtonAction() // should be called in main loop
