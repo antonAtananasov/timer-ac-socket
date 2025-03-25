@@ -68,15 +68,11 @@ void loop()
 
     // handle inputs
     MyButtonAction buttonAction = InputHandler.checkButtonAction();
-
-    if (buttonAction == SHORT_PRESS)
-        SerialHandler.printTime();
-    else if (buttonAction == LONG_PRESS)
-        SerialHandler.printMOTD();
+    MyScrollWheelAction scrollAction = InputHandler.checkScrollAction();
 
     if (InputHandler.getLastButtonActionTime() > 0)
     {
-        if ((buttonAction == BUTTON_DOWN || buttonAction == SHORT_PRESS || buttonAction == LONG_PRESS) && millis() - InputHandler.getLastButtonActionTime() < INPUT_INDICATION_DELAY)
+        if ((buttonAction == BUTTON_DOWN || buttonAction == BUTTON_SHORT_PRESS || buttonAction == BUTTON_LONG_PRESS) && millis() - InputHandler.getLastButtonActionTime() < INPUT_INDICATION_DELAY)
             LedMatrix.setStatusLed(LED_ON);
         else
             LedMatrix.setStatusLed(LED_OFF);

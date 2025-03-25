@@ -72,13 +72,14 @@ public:
     {
         bool successful = false;
 
-        // CLOCKLED <HOUR> <STATE>
-        // SOCKETLED <SOCKET> <STATE>
+        // HELP
         if (msg.startsWith("HELP"))
         {
             help();
             successful = true;
         }
+        // CLOCKLED <HOUR> <STATE>
+        // SOCKETLED <SOCKET> <STATE>
         if (msg.startsWith("CLOCKLED"))
         {
             int *values = readCmdNumber(msg, 2);
@@ -108,7 +109,7 @@ public:
         else if (msg.startsWith("BTNLOGIC"))
             successful = SETTINGS->setButtonActiveLogic((bool)readCmdNumber(msg));
         // GETTIME
-        // SETTIME <h> <m> <s> <ms>
+        // SETTIME <h> <m> <s>
         else if (msg.startsWith("GETTIME"))
         {
             printTime();

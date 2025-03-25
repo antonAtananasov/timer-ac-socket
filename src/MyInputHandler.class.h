@@ -2,8 +2,10 @@
 #define MyInputHandler_CLASS
 
 #include <Arduino.h>
+#include <RotaryEncoder.h>
 #include "MySettings.class.h"
 #include "MyButtonAction.enum.h"
+#include "MyScrollWheelAction.enum.h"
 
 class MyInputHandler
 {
@@ -11,7 +13,8 @@ private:
     unsigned long lastDebounceTime = 0;
     unsigned long lastButtonPress = 0, lastButtonRelease = 0, lastButtonActionTime = 0;
     bool buttonState, lastButtonState, longPressAvailable = true;
-    MyButtonAction lastButtonAction = UNKNOWN_BUTTON_ACTION;
+    MyButtonAction lastButtonAction = BUTTON_UNKNOWN;
+    RotaryEncoder *ROTARY_ENCODER = new RotaryEncoder(SCROLL_WHEEL_PIN1, SCROLL_WHEEL_PIN2, (RotaryEncoder::LatchMode)SCROLL_WHEEL_LATCH_MODE);
 
 public:
     MySettings *SETTINGS;
@@ -27,7 +30,7 @@ public:
 
     MyButtonAction checkButtonAction()
     {
-        MyButtonAction action = NONE;
+        MyButtonAction action = BUTTON_NONE;
         int reading = digitalRead(PUSH_BUTTON_PIN);
 
         if (reading != lastButtonState)
@@ -51,30 +54,30 @@ public:
                 {
                     lastButtonRelease = millis();
                     longPressAvailable = true;
-                    
+
                     if (lastButtonRelease - lastButtonPress < BUTTON_LONG_PRESS_DELAY)
-                        action = SHORT_PRESS;
+                        action = BUTTON_SHORT_PRESS;
                     else
                         action = BUTTON_UP;
                 }
             }
             else if (longPressAvailable && lastButtonRelease < lastButtonPress && millis() - lastButtonPress > BUTTON_LONG_PRESS_DELAY)
             {
-                action = LONG_PRESS;
+                action = BUTTON_LONG_PRESS;
                 longPressAvailable = false;
             }
         }
 
         lastButtonState = reading;
 
-        if (action != UNKNOWN_BUTTON_ACTION && action != NONE)
+        if (action != BUTTON_UNKNOWN && action != BUTTON_NONE)
         {
             // use this in case first detected action causes issues
             /*
             if (lastButtonActionTime == 0)
             {
                 lastButtonActionTime = millis();
-                return UNKNOWN_BUTTON_ACTION;
+                return BUTTON_UNKNOWN;
             }
             else
                 lastButtonActionTime = millis();
@@ -84,6 +87,23 @@ public:
         }
 
         return action;
+    }
+
+    MyScrollWheelAction checkScrollAction()
+    {
+        ROTARY_ENCODER->tick();
+        switch (ROTARY_ENCODER->getDirection())
+        {
+        case RotaryEncoder::Direction::NOROTATION:
+            return SCROLL_NONE;
+        case RotaryEncoder::Direction::CLOCKWISE:
+            return SCROLL_COUNTERCLOCKWISE;
+        case RotaryEncoder::Direction::COUNTERCLOCKWISE:
+            return SCROLL_CLOCKWISE;
+
+        default:
+            return SCROLL_UNKNOWN;
+        }
     }
 
     unsigned long getLastButtonActionTime() { return lastButtonActionTime; }

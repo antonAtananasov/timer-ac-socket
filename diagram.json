@@ -46,6 +46,7 @@
     { "type": "wokwi-led", "id": "statusled1", "top": -50, "left": 360, "attrs": {} },
     { "type": "wokwi-pushbutton", "id": "btn1", "top": -50, "left": 440, "attrs": {} },
     { "type": "wokwi-resistor", "id": "r1", "top": 20, "left": 440, "attrs": { "value": "10000" } },
+    { "type": "wokwi-ky-040", "id": "rotaryEncoder1", "top": 50, "left": 460,"rotate":180, "attrs": { "value": "10000" } },
     { "type": "wokwi-arduino-uno", "id": "uno", "top": 183, "left": -154.2, "attrs": {} }
   ],
   "connections": [
@@ -111,6 +112,10 @@
     ["socketled5:A", "and17:OUT", "green"],
     ["statusled1:A", "and18:OUT", "green"],
     ["r1:1", "btn1:2.l", "yellow"],
+    ["rotaryEncoder1:CLK", "uno:A2", "magenta"],
+    ["rotaryEncoder1:DT", "uno:A1", "magenta"],
+    ["btn1:1.l", "uno:5V", "red"],
+    ["rotaryEncoder1:VCC", "uno:5V", "red"],
     ["r1:2", "uno:GND.1", "black"],
     ["clockled1:C", "uno:GND.1", "black"],
     ["clockled2:C", "uno:GND.1", "black"],
@@ -135,7 +140,7 @@
     ["relayLed4:C", "uno:GND.1", "black"],
     ["relayLed5:C", "uno:GND.1", "black"],
     ["statusled1:C", "uno:GND.1", "black"],
-    ["btn1:1.l", "uno:5V", "red"]
+    ["rotaryEncoder1:GND", "uno:GND.1", "black"]
   ],
   "dependencies": {},
   "serialMonitor": {

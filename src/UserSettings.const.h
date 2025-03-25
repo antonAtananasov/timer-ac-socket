@@ -23,7 +23,11 @@
 #define DEFAULT_SOCKET_ACTIVE_LOGIC LOW // Logic level for enabling an individual socket when not valid in MEMORY CONFIGURATION below
 
 // Input controls wiring configuration
-#define PUSH_BUTTON_PIN A3
+#define PUSH_BUTTON_PIN A3 // Pin with pull up/down resistor to read button press
+#define SCROLL_WHEEL_PIN1 A2 // pin attached to CLK or primary pin of rotary encoder or mouse scroll wheel
+#define SCROLL_WHEEL_PIN2 A1 // pin attached to DT or secondary pin of rotary encoder or mouse scroll wheel
+#define SCROLL_WHEEL_LATCH_MODE 1 // latch mode number for rotary encoder from 1 to 3 as follows: 1 = 4 steps, Latch at position 3 only; 2 = 4 steps, Latch at position 0 (reverse wirings); 3 = 2 steps, Latch at position 0 and 3 
+
 
 // Socket relays wiring configuration
 #define SOCKET_RELAY_1_PIN 11u

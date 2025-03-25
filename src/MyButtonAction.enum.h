@@ -3,12 +3,12 @@
 
 enum MyButtonAction
 {
-    NONE,
+    BUTTON_NONE,
     BUTTON_DOWN,
     BUTTON_UP,
-    SHORT_PRESS,
-    LONG_PRESS,
-    UNKNOWN_BUTTON_ACTION = 255
+    BUTTON_SHORT_PRESS,
+    BUTTON_LONG_PRESS,
+    BUTTON_UNKNOWN = 255
 };
 
 #endif
