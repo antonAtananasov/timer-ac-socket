@@ -11,76 +11,66 @@
 // IMPORTANT
 // Please look at the UserSettings file and check the configuration before using this sketch
 
+// init objects
+MySettings *Settings;
+MyLedMatrix *LedMatrix;
+MyTimer *Timer;
+MySerialHandler *SerialHandler;
+MySocketManager *SocketManager;
+MyInputHandler *InputHandler;
+
 void setup()
 {
     // put your setup code here, to run once:
     Serial.begin(9600);
     Serial.println(F("Timed AC Plug\n"));
-}
 
-// init objects
-MySettings Settings(true, true);
-MyLedMatrix LedMatrix(
-    &Settings,
-    LED_PIN_PAIRS_LAYOUT,
-    LED_BLINK_DELAY_MS);
-MyTimer Timer(0, 0, 0, &Settings);
-MySerialHandler SerialHandler(&LedMatrix, &Settings, &Timer);
-MySocketManager SocketManager(&Settings, &LedMatrix, &Timer);
-MyInputHandler InputHandler(&Settings);
-
-bool _postSetup = false;
-void postSetup() // this function exists because setup() needs to begin Serial before main objects are instantiated, but they also have some setup to do before loop()
-{
-    if (_postSetup)
-        return;
+    Settings = new MySettings(true, true);
+    LedMatrix = new MyLedMatrix(
+        Settings,
+        LED_PIN_PAIRS_LAYOUT,
+        LED_BLINK_DELAY_MS);
+    Timer = new MyTimer(0, 0, 0, Settings);
+    SerialHandler = new MySerialHandler(LedMatrix, Settings, Timer);
+    SocketManager = new MySocketManager(Settings, LedMatrix, Timer);
+    InputHandler = new MyInputHandler(Settings);
 
     // Settings should load logic levels before led matrix is started
-    Settings.loadTimeFromEEPROM();
+    Settings->loadTimeFromEEPROM();
 
-    LedMatrix.testLEDs();
+    LedMatrix->testLEDs();
     // start blinking to indicate running behind time by default
-    LedMatrix.setStatusLed(LED_BLINK);
+    LedMatrix->setStatusLed(LED_BLINK);
 
-    Timer.setSecond(Settings.getSavedSecond());
-    Timer.setMinute(Settings.getSavedMinute());
-    Timer.setHour(Settings.getSavedHour());
+    Timer->setSecond(Settings->getSavedSecond());
+    Timer->setMinute(Settings->getSavedMinute());
+    Timer->setHour(Settings->getSavedHour());
 
-    SerialHandler.flush();
-    SerialHandler.printMOTD();
-
-    _postSetup = true;
+    SerialHandler->flush();
+    SerialHandler->printMOTD();
 }
+
 
 unsigned long _lastTimeDisplay = 0;
 void loop()
 {
     // always at start of loop
-    postSetup();
-    SerialHandler.handleMessage();
+    SerialHandler->handleMessage();
 
     // update time
-    Timer.update();
-    MyTime time = Timer.getTime();
+    Timer->update();
+    MyTime time = Timer->getTime();
 
     // autoshow time
-    LedMatrix.displayTime(time.hour, time.minute);
+    LedMatrix->displayTime(time.hour, time.minute);
 
     // handle inputs
-    MyButtonAction buttonAction = InputHandler.checkButtonAction();
-    MyScrollWheelAction scrollAction = InputHandler.checkScrollAction();
-
-    if (InputHandler.getLastButtonActionTime() > 0)
-    {
-        if ((buttonAction == BUTTON_DOWN || buttonAction == BUTTON_SHORT_PRESS || buttonAction == BUTTON_LONG_PRESS) && millis() - InputHandler.getLastButtonActionTime() < INPUT_INDICATION_DELAY)
-            LedMatrix.setStatusLed(LED_ON);
-        else
-            LedMatrix.setStatusLed(LED_OFF);
-    }
+    // MyButtonAction buttonAction = InputHandler->checkButtonAction();
+    // MyScrollWheelAction scrollAction = InputHandler->checkScrollAction();
 
     // update sockets
-    SocketManager.update();
+    SocketManager->update();
 
     // always at end of loop
-    LedMatrix.update();
+    LedMatrix->update();
 }

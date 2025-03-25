@@ -28,7 +28,7 @@ public:
         pinMode(PUSH_BUTTON_PIN, INPUT);
     };
 
-    MyButtonAction checkButtonAction()
+    MyButtonAction checkButtonAction() // should be called in main loop
     {
         MyButtonAction action = BUTTON_NONE;
         int reading = digitalRead(PUSH_BUTTON_PIN);
@@ -89,7 +89,7 @@ public:
         return action;
     }
 
-    MyScrollWheelAction checkScrollAction()
+    MyScrollWheelAction checkScrollAction() // should be called in main loop
     {
         ROTARY_ENCODER->tick();
         switch (ROTARY_ENCODER->getDirection())

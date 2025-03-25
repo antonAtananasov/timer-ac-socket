@@ -22,7 +22,7 @@ public:
     unsigned long BLINK_DELAY_MS;
     MySettings *SETTINGS;
 
-    MyLedMatrix(MySettings *Settings, uint8_t layout[6][3][2], unsigned long blinkDelay)
+    MyLedMatrix(MySettings *Settings, const uint8_t layout[6][3][2], unsigned long blinkDelay)
     {
         // build logical led pin pairs
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)

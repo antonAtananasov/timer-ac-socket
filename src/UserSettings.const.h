@@ -28,7 +28,6 @@
 #define SCROLL_WHEEL_PIN2 A1 // pin attached to DT or secondary pin of rotary encoder or mouse scroll wheel
 #define SCROLL_WHEEL_LATCH_MODE 1 // latch mode number for rotary encoder from 1 to 3 as follows: 1 = 4 steps, Latch at position 3 only; 2 = 4 steps, Latch at position 0 (reverse wirings); 3 = 2 steps, Latch at position 0 and 3 
 
-
 // Socket relays wiring configuration
 #define SOCKET_RELAY_1_PIN 11u
 #define SOCKET_RELAY_2_PIN 12u
@@ -53,7 +52,7 @@
 //      5 socket leds from 1 to 5
 //      1 status led
 #define LED_PIN_PAIRS_LAYOUT \
-(uint8_t[6][3][2]){\
+(const uint8_t[6][3][2]){\
  /* clock leds */ \
  {{LED_GROUP_1_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_1_PIN, LED_INDIVIDUAL_2_PIN}, {LED_GROUP_1_PIN, LED_INDIVIDUAL_3_PIN}},\
  {{LED_GROUP_2_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_2_PIN, LED_INDIVIDUAL_2_PIN}, {LED_GROUP_2_PIN, LED_INDIVIDUAL_3_PIN}},\
