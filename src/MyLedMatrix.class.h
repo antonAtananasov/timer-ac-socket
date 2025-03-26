@@ -85,7 +85,7 @@ public:
                     digitalWrite(ledIndividualPin, ledIndividualActiveLogic);
                 else if (ledState == LED_BLINK_SLOW || ledState == LED_BLINK_FAST)
                 {
-                    bool blinkState = ((millis() - initTime) / (ledState == LED_BLINK_SLOW ? BLINK_SLOW_DELAY_MS : BLINK_FAST_DELAY_MS)) % 2 == 0; 
+                    bool blinkState = ((millis() - initTime) / (ledState == LED_BLINK_SLOW ? BLINK_SLOW_DELAY_MS : BLINK_FAST_DELAY_MS)) % 2 == 0;
                     digitalWrite(ledIndividualPin, blinkState ? ledIndividualActiveLogic : !ledIndividualActiveLogic);
                 }
                 else // if (ledState == LED_OFF) or unknown
@@ -176,25 +176,54 @@ public:
 
     bool displayTime(uint8_t hour, uint8_t minute)
     {
-        if (hour >= 0 && hour <= HOURS_IN_ONE_DAY && minute >= 0 && minute <= MINUTES_IN_ONE_HOUR)
-        {
-            hour = hour % 12;
-            if (hour == 0)
-                hour = 12;
-
-            minute = (minute % MINUTES_IN_ONE_HOUR) / FIVE_MINUTES;
-            if (minute == 0)
-                minute = 12;
-
-            for (uint8_t i = 1; i <= CLOCK_LEDS_COUNT; i++)
-                setClockLed(i, LED_OFF);
-            setClockLed(hour, LED_ON);
-            setClockLed(minute, LED_BLINK_SLOW);
-
-            return true;
-        }
-        else
+        if (!(hour >= 0 && hour <= HOURS_IN_ONE_DAY && minute >= 0 && minute <= MINUTES_IN_ONE_HOUR))
             return false;
+
+        uint8_t hourLedNumber = hour % 12;
+        if (hourLedNumber == 0)
+            hourLedNumber = 12;
+
+        uint8_t minuteLedNumber = (minute % MINUTES_IN_ONE_HOUR) / FIVE_MINUTES;
+        if (minuteLedNumber == 0)
+            minuteLedNumber = 12;
+
+        for (uint8_t i = 1; i <= CLOCK_LEDS_COUNT; i++)
+        {
+            setClockLed(i, LED_OFF);
+            if (i == hourLedNumber)
+                setClockLed(hourLedNumber, LED_ON);
+            if (i == minuteLedNumber)
+                setClockLed(minuteLedNumber, LED_BLINK_SLOW);
+        }
+        
+        for (uint8_t i = 1; i <= SOCKET_LEDS_COUNT; i++)
+        {
+            uint8_t nextMinute = minute + 5;
+            uint8_t nextHour = hour;
+            if (nextMinute >= MINUTES_IN_ONE_HOUR)
+            {
+                nextMinute -= MINUTES_IN_ONE_HOUR;
+                nextHour++;
+            }
+            if (nextHour >= HOURS_IN_ONE_DAY)
+            {
+                nextMinute -= HOURS_IN_ONE_DAY;
+            }
+
+            bool currentState = SETTINGS->getSocketActivity(hour, (minute / 5) * 5, i);
+            bool nextState = SETTINGS->getSocketActivity(nextHour, (nextMinute / 5) * 5, i);
+
+            if (!currentState && !nextState)
+                setSocketLed(i, LED_OFF);
+            else if (!currentState && nextState)
+                setSocketLed(i, LED_BLINK_FAST);
+            else if (currentState && !nextState)
+                setSocketLed(i, LED_BLINK_SLOW);
+            else if (currentState && nextState)
+                setSocketLed(i, LED_ON);
+        }
+
+        return true;
     }
 
     void testLEDs(unsigned long delayms = 50)

@@ -22,11 +22,11 @@ public:
     MySettings(bool loadLogicLevelsFromEEPROMNow, bool loadTimeFromEEPROMNow)
     {
         if (loadLogicLevelsFromEEPROMNow && !loadLogicLevelsFromEEPROM())
-            {
-                saveHour(0);
-                saveMinute(0);
-                saveSecond(0);
-            }
+        {
+            saveHour(0);
+            saveMinute(0);
+            saveSecond(0);
+        }
         if (loadTimeFromEEPROMNow)
             loadTimeFromEEPROM();
     };
@@ -190,7 +190,7 @@ public:
         if (socket < 1 || socket > SOCKETS_COUNT)
             valid = false;
 
-        socket %= SOCKETS_COUNT;
+        socket -= 1;
 
         uint16_t timeIndex = hour * MINUTES_IN_ONE_HOUR / FIVE_MINUTES + minute / FIVE_MINUTES;
         uint16_t bitIndex = timeIndex * SOCKETS_COUNT + socket;
