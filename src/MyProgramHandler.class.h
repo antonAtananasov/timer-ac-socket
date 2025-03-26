@@ -1,5 +1,5 @@
-#ifndef MyProgram_CLASS
-#define MyProgram_CLASS
+#ifndef MyProgramHandler_CLASS
+#define MyProgramHandler_CLASS
 
 #include <Arduino.h>
 #include "MyInputHandler.class.h"
@@ -9,7 +9,7 @@
 #include "MySettings.class.h"
 #include "MySocketManager.class.h"
 
-class MyProgram
+class MyProgramHandler
 {
 private:
     MyProgramMode currentMode = PROGRAM_DISPLAY_TIME;
@@ -26,7 +26,7 @@ public:
     MySettings *SETTINGS;
     MySocketManager *SOCKET_MANAGER;
 
-    MyProgram(MyInputHandler *InputHandler, MySettings *Settings, MyTimer *Timer, MyLedMatrix *LedMatrix, MySocketManager *SocketManager)
+    MyProgramHandler(MyInputHandler *InputHandler, MySettings *Settings, MyTimer *Timer, MyLedMatrix *LedMatrix, MySocketManager *SocketManager)
     {
         INPUT_HANDLER = InputHandler;
         TIMER = Timer;

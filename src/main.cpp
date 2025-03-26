@@ -6,7 +6,7 @@
 #include "MyLedState.enum.h"
 #include "MySocketManager.class.h"
 #include "MyInputHandler.class.h"
-#include "MyProgram.class.h"
+#include "MyProgramHandler.class.h"
 #include "UserSettings.const.h"
 
 // IMPORTANT
@@ -19,7 +19,7 @@ MyTimer *Timer;
 MySerialHandler *SerialHandler;
 MySocketManager *SocketManager;
 MyInputHandler *InputHandler;
-MyProgram *ProgramHandler;
+MyProgramHandler *ProgramHandler;
 
 void setup()
 {
@@ -36,7 +36,7 @@ void setup()
     Timer = new MyTimer(0, 0, 0, Settings);
     SocketManager = new MySocketManager(Settings, LedMatrix, Timer);
     InputHandler = new MyInputHandler(Settings);
-    ProgramHandler = new MyProgram(InputHandler, Settings, Timer, LedMatrix, SocketManager);
+    ProgramHandler = new MyProgramHandler(InputHandler, Settings, Timer, LedMatrix, SocketManager);
     SerialHandler = new MySerialHandler(Settings, LedMatrix, SocketManager, Timer, ProgramHandler);
 
     LedMatrix->testLEDs();

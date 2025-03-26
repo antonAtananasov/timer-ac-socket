@@ -6,7 +6,7 @@
 #include "MyLedMatrix.class.h"
 #include "MySettings.class.h"
 #include "MyTimer.class.h"
-#include "MyProgram.class.h"
+#include "MyProgramHandler.class.h"
 #include "MySocketManager.class.h"
 #include "MyStringHelper.class.h"
 
@@ -27,9 +27,9 @@ public:
     MyLedMatrix *LED_MATRIX;
     MySocketManager *SOCKET_MANAGER;
     MyTimer *TIMER;
-    MyProgram *PROGRAM_HANDLER;
+    MyProgramHandler *PROGRAM_HANDLER;
 
-    MySerialHandler(MySettings *Settings, MyLedMatrix *LedMatrix, MySocketManager *SocketManager, MyTimer *timer, MyProgram *ProgramHandler, bool echo = true)
+    MySerialHandler(MySettings *Settings, MyLedMatrix *LedMatrix, MySocketManager *SocketManager, MyTimer *timer, MyProgramHandler *ProgramHandler, bool echo = true)
     {
         LED_MATRIX = LedMatrix;
         SETTINGS = Settings;
