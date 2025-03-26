@@ -7,6 +7,7 @@
 #include "MyProgramMode.enum.h"
 #include "MyLedMatrix.class.h"
 #include "MySettings.class.h"
+#include "MySocketManager.class.h"
 
 class MyProgram
 {
@@ -23,24 +24,42 @@ public:
     MyTimer *TIMER;
     MyLedMatrix *LED_MATRIX;
     MySettings *SETTINGS;
+    MySocketManager *SOCKET_MANAGER;
 
-    MyProgram(MyInputHandler *InputHandler, MySettings *Settings, MyTimer *Timer, MyLedMatrix *LedMatrix)
+    MyProgram(MyInputHandler *InputHandler, MySettings *Settings, MyTimer *Timer, MyLedMatrix *LedMatrix, MySocketManager *SocketManager)
     {
         INPUT_HANDLER = InputHandler;
         TIMER = Timer;
         LED_MATRIX = LedMatrix;
         SETTINGS = Settings;
+        SOCKET_MANAGER = SocketManager;
     };
 
     MyProgramMode getProgramMode() { return currentMode; }
     bool setProgramMode(MyProgramMode mode)
     {
-        enterModeTime = millis();
-        currentMode = mode;
-        return true;
+        switch (mode)
+        {
+        case PROGRAM_DISPLAY_TIME:
+        case PROGRAM_SET_TIME_AMPM:
+        case PROGRAM_SET_TIME_HOUR:
+        case PROGRAM_SET_TIME_MINUTE:
+        case PROGRAM_SET_SOCKETS:
+        case PROGRAM_SET_SOCKETS_AMPM:
+        case PROGRAM_SET_SOCKETS_HOUR:
+        case PROGRAM_SET_SOCKETS_MINUTE:
+        case PROGRAM_TEST:
+            enterModeTime = millis();
+            currentMode = mode;
+
+            return true;
+
+        default:
+            return false;
+        }
     }
 
-    void mainLoop(MyButtonAction buttonAction, MyScrollWheelAction scrollAction)
+    void mainLoop(MyButtonAction buttonAction, MyScrollWheelAction scrollAction) // should be called continuously in void loop
     {
 
         // handle input and status led
@@ -63,11 +82,17 @@ public:
         case PROGRAM_SET_SOCKETS:
             setSockets(buttonAction, scrollAction);
             break;
+        case PROGRAM_TEST:
+            /* leave all control to the serial mon */
+            break;
 
         default:
-            setProgramMode(PROGRAM_DISPLAY_TIME);
+            returnToMainMode(true);
             break;
         }
+
+        if (currentMode != PROGRAM_TEST) //updates are blocked only in test mode
+            SOCKET_MANAGER->update();
     }
 
     void displayTime(MyButtonAction buttonAction, MyScrollWheelAction scrollAction)

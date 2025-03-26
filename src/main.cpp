@@ -19,7 +19,7 @@ MyTimer *Timer;
 MySerialHandler *SerialHandler;
 MySocketManager *SocketManager;
 MyInputHandler *InputHandler;
-MyProgram *Program;
+MyProgram *ProgramHandler;
 
 void setup()
 {
@@ -34,10 +34,10 @@ void setup()
         LED_BLINK_SLOW_DELAY_MS,
         LED_BLINK_FAST_DELAY_MS);
     Timer = new MyTimer(0, 0, 0, Settings);
-    SerialHandler = new MySerialHandler(LedMatrix, Settings, Timer);
     SocketManager = new MySocketManager(Settings, LedMatrix, Timer);
     InputHandler = new MyInputHandler(Settings);
-    Program = new MyProgram(InputHandler, Settings, Timer, LedMatrix);
+    ProgramHandler = new MyProgram(InputHandler, Settings, Timer, LedMatrix, SocketManager);
+    SerialHandler = new MySerialHandler(Settings, LedMatrix, SocketManager, Timer, ProgramHandler);
 
     LedMatrix->testLEDs();
 
@@ -61,10 +61,9 @@ void loop()
     MyScrollWheelAction scrollAction = InputHandler->checkScrollAction();
     // END "always at start of loop"
 
-    Program->mainLoop(buttonAction, scrollAction);
+    ProgramHandler->mainLoop(buttonAction, scrollAction);
 
     // BEGIN "always at end of loop"
     LedMatrix->update();
-    SocketManager->update();
     // END "always at end of loop"
 }

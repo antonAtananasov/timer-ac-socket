@@ -6,6 +6,9 @@
 #include "MyLedMatrix.class.h"
 #include "MySettings.class.h"
 #include "MyTimer.class.h"
+#include "MyProgram.class.h"
+#include "MySocketManager.class.h"
+#include "MyStringHelper.class.h"
 
 class MySerialHandler
 {
@@ -16,18 +19,24 @@ private:
 
     String message = "";
 
+
+
 public:
     bool ECHO = true; // echo input back through serial
-    MyLedMatrix *LED_MATRIX;
     MySettings *SETTINGS;
+    MyLedMatrix *LED_MATRIX;
+    MySocketManager *SOCKET_MANAGER;
     MyTimer *TIMER;
+    MyProgram *PROGRAM_HANDLER;
 
-    MySerialHandler(MyLedMatrix *LedMatrix, MySettings *Settings, MyTimer *timer, bool echo = true)
+    MySerialHandler(MySettings *Settings, MyLedMatrix *LedMatrix, MySocketManager *SocketManager, MyTimer *timer, MyProgram *ProgramHandler, bool echo = true)
     {
         LED_MATRIX = LedMatrix;
         SETTINGS = Settings;
         TIMER = timer;
         ECHO = echo;
+        PROGRAM_HANDLER = ProgramHandler;
+        SOCKET_MANAGER = SocketManager;
     };
 
     void printMOTD()
@@ -90,6 +99,19 @@ public:
             int *values = readCmdNumber(msg, 2);
             successful = LED_MATRIX->setSocketLed(values[0], (MyLedState)values[1]);
         }
+        // SETSOCK <socket 1-5> <state 0-1>
+        // GETSOCK <socket 1-5>
+        else if (msg.startsWith("SETSOCK"))
+        {
+            int *values = readCmdNumber(msg, 2);
+            successful = SOCKET_MANAGER->setSocketState(values[0], (bool)values[1]);
+        }
+        else if (msg.startsWith("GETSOCK"))
+        {
+            int value = readCmdNumber(msg);
+            Serial.println(SOCKET_MANAGER->getSocketState(value));
+            successful = true;
+        }
         // STATUSLED <STATE>
         // ALLLEDS <STATE>
         else if (msg.startsWith("STATUSLED"))
@@ -133,9 +155,28 @@ public:
             int *values = readCmdNumber(msg, 4);
             successful = SETTINGS->setSocketActivity(values[0], values[1], values[2], values[3]);
         }
+        // SETMODE <mode>
+        // GETMODE
+        else if (msg.startsWith("SETMODE"))
+        {
+            int value = readCmdNumber(msg);
+            successful = PROGRAM_HANDLER->setProgramMode((MyProgramMode)value);
+        }
+        else if (msg.startsWith("GETMODE"))
+        {
+            Serial.println(PROGRAM_HANDLER->getProgramMode());
+            successful = true;
+        }
 
         // always at end
-        Serial.println(successful ? "OK." : "Err.:" + msg);
+        if (successful)
+            Serial.println(F("OK."));
+        else
+        {
+            Serial.print(F("Err.:"));
+            Serial.print(msg);
+            Serial.println();
+        }
     }
 
     int readCmdNumber(String msg)
@@ -167,21 +208,8 @@ public:
 
     void help()
     {
-        uint8_t msgCount = 11;
-        const char *messages[msgCount] = {
-            "CLOCKLED <hour 1-12> <state 0-2>",
-            "SOCKETLED <socket 1-5> <state 0-2>",
-            "STATUSLED <state 0-2>",
-            "LEDGRPLOGIC <0/1>",
-            "LEDINDLOGIC <0/1>",
-            "SOCKLOGIC <0/1>",
-            "BTNLOGIC <0/1>",
-            "GETTIME",
-            "SETTIME <HH> <MM> <SS>",
-            "GETACTIVE <HH> <MM> <socket 1-5>",
-            "SETACTIVE <HH> <MM> <socket 1-5>"};
-        for (uint8_t i = 0; i < msgCount; i++)
-            Serial.println(messages[i]);
+        for (uint8_t i = 0; i < MyStringHelper::helpMessageCount; i++)
+            Serial.println((const __FlashStringHelper*)pgm_read_ptr(&MyStringHelper::helpMessages[0]));
     }
 
     bool setTime(String msg)

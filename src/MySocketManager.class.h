@@ -33,12 +33,11 @@ public:
         for (uint8_t i = 1; i <= SOCKETS_COUNT; i++)
         {
             bool socketActive = SETTINGS->getSocketActivity(time.hour, (time.minute / 5) * 5, i);
-            LED_MATRIX->setSocketLed(i, (MyLedState)socketActive);
-            setSocket(i, socketActive);
+            setSocketState(i, socketActive);
         }
     }
 
-    bool setSocket(uint8_t socket, bool state)
+    bool setSocketState(uint8_t socket, bool state)
     {
         if (socket < 1 || socket > SOCKETS_COUNT)
             return false;
@@ -46,6 +45,12 @@ public:
         bool socketActiveLogic = SETTINGS->getSocketsActiveLogic();
         digitalWrite(SOCKET_RELAY_PINS[socket - 1], state ? socketActiveLogic : !socketActiveLogic);
         return true;
+    }
+    bool getSocketState(uint8_t socket)
+    {
+        if (socket < 1 || socket > SOCKETS_COUNT)
+            return false;
+        return digitalRead(SOCKET_RELAY_PINS[socket - 1]) == SETTINGS->getSocketsActiveLogic();
     }
 };
 
