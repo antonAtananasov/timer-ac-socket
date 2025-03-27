@@ -25,7 +25,7 @@ void setup()
 {
     // put your setup code here, to run once:
     Serial.begin(9600);
-    Serial.println(F("Timed AC Plug\n"));
+    Serial.println(F("Timed AC Socket\n"));
 
     Settings = new MySettings(true, true);
     LedMatrix = new MyLedMatrix(   Settings  );
