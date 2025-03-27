@@ -19,8 +19,6 @@ private:
 
     String message = "";
 
-
-
 public:
     bool ECHO = true; // echo input back through serial
     MySettings *SETTINGS;
@@ -167,6 +165,18 @@ public:
             Serial.println(PROGRAM_HANDLER->getProgramMode());
             successful = true;
         }
+        // SETANIM <0/1>
+        // GETANIM
+        else if (msg.startsWith("SETANIM"))
+        {
+            int value = readCmdNumber(msg);
+            successful = SETTINGS->setSocketLedAnimationActive((bool)value);
+        }
+        else if (msg.startsWith("GETANIM"))
+        {
+            Serial.println(SETTINGS->getSocketLedAnimationActive());
+            successful = true;
+        }
 
         // always at end
         if (successful)
@@ -209,7 +219,7 @@ public:
     void help()
     {
         for (uint8_t i = 0; i < MyStringHelper::helpMessageCount; i++)
-            Serial.println((const __FlashStringHelper*)pgm_read_ptr(&MyStringHelper::helpMessages[0]));
+            Serial.println((const __FlashStringHelper *)pgm_read_ptr(&MyStringHelper::helpMessages[i]));
     }
 
     bool setTime(String msg)

@@ -6,7 +6,6 @@
 #include "MyLedState.enum.h"
 #include "UserSettings.const.h"
 
-const uint8_t MY_LED_STATES[] = {LED_OFF, LED_ON, LED_BLINK_SLOW, LED_BLINK_FAST};
 
 class MyLedMatrix
 {
@@ -14,26 +13,24 @@ private:
     // LED states (12 clock leds, where the first is 1 o'clock; 5 socket leds; 1 status led)
     MyLedState ledStates[LEDS_TOTAL];
     // led pin combinations following state order (group, then individual)
-    uint8_t LED_PIN_PAIRS[LED_GROUPS_COUNT][LED_INDIVIDUALS_COUNT][2];
     uint8_t LED_GROUP_PINS[LED_GROUPS_COUNT], LED_INDIVIDUAL_PINS[LED_INDIVIDUALS_COUNT];
     unsigned long initTime;
 
 public:
-    unsigned long BLINK_SLOW_DELAY_MS, BLINK_FAST_DELAY_MS;
     MySettings *SETTINGS;
 
-    MyLedMatrix(MySettings *Settings, const uint8_t layout[6][3][2], unsigned long blinkSlowDelay, unsigned long blinkFastDelay)
+    MyLedMatrix(MySettings *Settings)
     {
         // build logical led pin pairs
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)
             for (uint8_t j = 0; j < LED_INDIVIDUALS_COUNT; j++)
                 for (uint8_t k = 0; k < 2; k++)
                 {
-                    LED_PIN_PAIRS[i][j][k] = layout[i][j][k];
+                    // LED_PIN_PAIRS[i][j][k] = layout[i][j][k];
                     if (k == 0)
-                        LED_GROUP_PINS[i] = layout[i][j][k];
+                        LED_GROUP_PINS[i] = LED_PIN_PAIRS_LAYOUT[i][j][k];
                     else
-                        LED_INDIVIDUAL_PINS[j] = layout[i][j][k];
+                        LED_INDIVIDUAL_PINS[j] = LED_PIN_PAIRS_LAYOUT[i][j][k];
                 }
 
         // set all led pins to output
@@ -41,9 +38,6 @@ public:
             pinMode(LED_GROUP_PINS[groupPin], OUTPUT);
         for (uint8_t individualLed = 0; individualLed < LED_INDIVIDUALS_COUNT; individualLed++)
             pinMode(LED_INDIVIDUAL_PINS[individualLed], OUTPUT);
-
-        BLINK_SLOW_DELAY_MS = blinkSlowDelay;
-        BLINK_FAST_DELAY_MS = blinkFastDelay;
 
         // link to Settings class
         SETTINGS = Settings;
@@ -74,8 +68,8 @@ public:
                 int ledStateIndex = activeLedGroup * LED_INDIVIDUALS_COUNT + individualLed;
                 MyLedState ledState = ledStates[ledStateIndex];
 
-                int ledGroupPin = LED_PIN_PAIRS[activeLedGroup][individualLed][0];
-                int ledIndividualPin = LED_PIN_PAIRS[activeLedGroup][individualLed][1];
+                int ledGroupPin = LED_PIN_PAIRS_LAYOUT[activeLedGroup][individualLed][0];
+                int ledIndividualPin = LED_PIN_PAIRS_LAYOUT[activeLedGroup][individualLed][1];
 
                 // enable led group
                 digitalWrite(ledGroupPin, ledGroupActiveLogic);
@@ -85,7 +79,7 @@ public:
                     digitalWrite(ledIndividualPin, ledIndividualActiveLogic);
                 else if (ledState == LED_BLINK_SLOW || ledState == LED_BLINK_FAST)
                 {
-                    bool blinkState = ((millis() - initTime) / (ledState == LED_BLINK_SLOW ? BLINK_SLOW_DELAY_MS : BLINK_FAST_DELAY_MS)) % 2 == 0;
+                    bool blinkState = ((millis() - initTime) / (ledState == LED_BLINK_SLOW ? LED_BLINK_SLOW_DELAY_MS : LED_BLINK_FAST_DELAY_MS)) % 2 == 0;
                     digitalWrite(ledIndividualPin, blinkState ? ledIndividualActiveLogic : !ledIndividualActiveLogic);
                 }
                 else // if (ledState == LED_OFF) or unknown
@@ -96,8 +90,8 @@ public:
 
     bool isStateValid(MyLedState state)
     {
-        for (uint8_t i = 0; i < sizeof(MY_LED_STATES) / sizeof(MY_LED_STATES[0]); i++)
-            if (MY_LED_STATES[i] == i)
+        for (uint8_t i = 0; i < sizeof(MY_VALID_LED_STATES) / sizeof(MY_VALID_LED_STATES[0]); i++)
+            if (MY_VALID_LED_STATES[i] == i)
                 return true;
         return false;
     }
@@ -195,10 +189,10 @@ public:
             if (i == minuteLedNumber)
                 setClockLed(minuteLedNumber, LED_BLINK_SLOW);
         }
-        
+
         for (uint8_t i = 1; i <= SOCKET_LEDS_COUNT; i++)
         {
-            uint8_t nextMinute = minute + 5;
+            uint8_t nextMinute = minute + FIVE_MINUTES;
             uint8_t nextHour = hour;
             if (nextMinute >= MINUTES_IN_ONE_HOUR)
             {
@@ -210,17 +204,22 @@ public:
                 nextMinute -= HOURS_IN_ONE_DAY;
             }
 
-            bool currentState = SETTINGS->getSocketActivity(hour, (minute / 5) * 5, i);
-            bool nextState = SETTINGS->getSocketActivity(nextHour, (nextMinute / 5) * 5, i);
+            bool currentState = SETTINGS->getSocketActivity(hour, (minute / FIVE_MINUTES) * FIVE_MINUTES, i);
 
-            if (!currentState && !nextState)
-                setSocketLed(i, LED_OFF);
-            else if (!currentState && nextState)
-                setSocketLed(i, LED_BLINK_FAST);
-            else if (currentState && !nextState)
-                setSocketLed(i, LED_BLINK_SLOW);
-            else if (currentState && nextState)
-                setSocketLed(i, LED_ON);
+            if (SETTINGS->getSocketLedAnimationActive())
+            {
+                bool nextState = SETTINGS->getSocketActivity(nextHour, (nextMinute / FIVE_MINUTES) * FIVE_MINUTES, i);
+                if (!currentState && !nextState)
+                    setSocketLed(i, LED_OFF);
+                else if (!currentState && nextState)
+                    setSocketLed(i, LED_BLINK_FAST);
+                else if (currentState && !nextState)
+                    setSocketLed(i, LED_BLINK_SLOW);
+                else if (currentState && nextState)
+                    setSocketLed(i, LED_ON);
+            }
+            else
+                setSocketLed(i, currentState ? LED_ON : LED_OFF);
         }
 
         return true;

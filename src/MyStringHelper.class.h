@@ -22,8 +22,10 @@ public:
     static const PROGMEM char m14[];
     static const PROGMEM char m15[];
     static const PROGMEM char m16[];
+    static const PROGMEM char m17[];
+    static const PROGMEM char m18[];
 
-    static const uint8_t helpMessageCount = 16;
+    static const uint8_t helpMessageCount = 18;
     static const PROGMEM char *const helpMessages[helpMessageCount];
 };
 const PROGMEM char MyStringHelper::m1[] = "CLOCKLED <hour 1-12> <state 0-3>";
@@ -42,6 +44,8 @@ const PROGMEM char MyStringHelper::m13[] = "GETACTIVE <HH> <MM> <socket 1-5>";
 const PROGMEM char MyStringHelper::m14[] = "SETACTIVE <HH> <MM> <socket 1-5>";
 const PROGMEM char MyStringHelper::m15[] = "SETMODE <mode 0-255>";
 const PROGMEM char MyStringHelper::m16[] = "GETMODE";
+const PROGMEM char MyStringHelper::m17[] = "SETANIM <0/1>";
+const PROGMEM char MyStringHelper::m18[] = "GETANIM";
 
 const PROGMEM char *const MyStringHelper::helpMessages[MyStringHelper::helpMessageCount] = {
     MyStringHelper::m1,
@@ -60,6 +64,8 @@ const PROGMEM char *const MyStringHelper::helpMessages[MyStringHelper::helpMessa
     MyStringHelper::m14,
     MyStringHelper::m15,
     MyStringHelper::m16,
+    MyStringHelper::m17,
+    MyStringHelper::m18,
 };
 
 #endif

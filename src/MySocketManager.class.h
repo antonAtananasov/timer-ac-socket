@@ -32,7 +32,7 @@ public:
 
         for (uint8_t i = 1; i <= SOCKETS_COUNT; i++)
         {
-            bool socketActive = SETTINGS->getSocketActivity(time.hour, (time.minute / 5) * 5, i);
+            bool socketActive = SETTINGS->getSocketActivity(time.hour, (time.minute / FIVE_MINUTES) * FIVE_MINUTES, i);
             setSocketState(i, socketActive);
         }
     }

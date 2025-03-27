@@ -28,11 +28,7 @@ void setup()
     Serial.println(F("Timed AC Plug\n"));
 
     Settings = new MySettings(true, true);
-    LedMatrix = new MyLedMatrix(
-        Settings,
-        LED_PIN_PAIRS_LAYOUT,
-        LED_BLINK_SLOW_DELAY_MS,
-        LED_BLINK_FAST_DELAY_MS);
+    LedMatrix = new MyLedMatrix(   Settings  );
     Timer = new MyTimer(0, 0, 0, Settings);
     SocketManager = new MySocketManager(Settings, LedMatrix, Timer);
     InputHandler = new MyInputHandler(Settings);
