@@ -6,7 +6,6 @@
 #include "MyLedState.enum.h"
 #include "UserSettings.const.h"
 
-
 class MyLedMatrix
 {
 private:
@@ -24,14 +23,10 @@ public:
         // build logical led pin pairs
         for (uint8_t i = 0; i < LED_GROUPS_COUNT; i++)
             for (uint8_t j = 0; j < LED_INDIVIDUALS_COUNT; j++)
-                for (uint8_t k = 0; k < 2; k++)
-                {
-                    // LED_PIN_PAIRS[i][j][k] = layout[i][j][k];
-                    if (k == 0)
-                        LED_GROUP_PINS[i] = LED_PIN_PAIRS_LAYOUT[i][j][k];
-                    else
-                        LED_INDIVIDUAL_PINS[j] = LED_PIN_PAIRS_LAYOUT[i][j][k];
-                }
+            {
+                LED_GROUP_PINS[i] = pgm_read_byte(&LED_PIN_PAIRS_LAYOUT[i][j][0]);
+                LED_INDIVIDUAL_PINS[j] = pgm_read_byte(&LED_PIN_PAIRS_LAYOUT[i][j][1]);
+            }
 
         // set all led pins to output
         for (uint8_t groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
@@ -52,7 +47,7 @@ public:
 
         for (uint8_t activeLedGroup = 0; activeLedGroup < LED_GROUPS_COUNT; activeLedGroup++)
         {
-            // TODO: use direct port manipulation for faster switching
+            // HINT: Use direct port manipulation if faster switching is needed
             for (uint8_t groupPin = 0; groupPin < LED_GROUPS_COUNT; groupPin++)
             {
                 // only enable active group
@@ -68,8 +63,8 @@ public:
                 int ledStateIndex = activeLedGroup * LED_INDIVIDUALS_COUNT + individualLed;
                 MyLedState ledState = ledStates[ledStateIndex];
 
-                int ledGroupPin = LED_PIN_PAIRS_LAYOUT[activeLedGroup][individualLed][0];
-                int ledIndividualPin = LED_PIN_PAIRS_LAYOUT[activeLedGroup][individualLed][1];
+                int ledGroupPin = pgm_read_byte(&LED_PIN_PAIRS_LAYOUT[activeLedGroup][individualLed][0]);
+                int ledIndividualPin = pgm_read_byte(&LED_PIN_PAIRS_LAYOUT[activeLedGroup][individualLed][1]);
 
                 // enable led group
                 digitalWrite(ledGroupPin, ledGroupActiveLogic);

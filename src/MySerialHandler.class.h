@@ -80,31 +80,31 @@ public:
         bool successful = false;
 
         // HELP
-        if (msg.startsWith("HELP"))
+        if (msg.startsWith(F("HELP")))
         {
             help();
             successful = true;
         }
         // CLOCKLED <HOUR> <STATE>
         // SOCKETLED <SOCKET> <STATE>
-        if (msg.startsWith("CLOCKLED"))
+        if (msg.startsWith(F("CLOCKLED")))
         {
             int *values = readCmdNumber(msg, 2);
             successful = LED_MATRIX->setClockLed(values[0], (MyLedState)values[1]);
         }
-        else if (msg.startsWith("SOCKETLED"))
+        else if (msg.startsWith(F("SOCKETLED")))
         {
             int *values = readCmdNumber(msg, 2);
             successful = LED_MATRIX->setSocketLed(values[0], (MyLedState)values[1]);
         }
         // SETSOCK <socket 1-5> <state 0-1>
         // GETSOCK <socket 1-5>
-        else if (msg.startsWith("SETSOCK"))
+        else if (msg.startsWith(F("SETSOCK")))
         {
             int *values = readCmdNumber(msg, 2);
             successful = SOCKET_MANAGER->setSocketState(values[0], (bool)values[1]);
         }
-        else if (msg.startsWith("GETSOCK"))
+        else if (msg.startsWith(F("GETSOCK")))
         {
             int value = readCmdNumber(msg);
             Serial.println(SOCKET_MANAGER->getSocketState(value));
@@ -112,34 +112,34 @@ public:
         }
         // STATUSLED <STATE>
         // ALLLEDS <STATE>
-        else if (msg.startsWith("STATUSLED"))
+        else if (msg.startsWith(F("STATUSLED")))
             successful = LED_MATRIX->setStatusLed((MyLedState)readCmdNumber(msg));
-        else if (msg.startsWith("ALLLEDS"))
+        else if (msg.startsWith(F("ALLLEDS")))
             successful = LED_MATRIX->setAllLeds((MyLedState)readCmdNumber(msg));
         // LEDGRPLOGIC <0/1>
         // LEDINDLOGIC <0/1>
         // SOCKLOGIC <0/1>
         // BTNLOGIC <0/1>
-        else if (msg.startsWith("LEDGRPLOGIC"))
+        else if (msg.startsWith(F("LEDGRPLOGIC")))
             successful = SETTINGS->setLedGroupActiveLogic((bool)readCmdNumber(msg));
-        else if (msg.startsWith("LEDINDLOGIC"))
+        else if (msg.startsWith(F("LEDINDLOGIC")))
             successful = SETTINGS->setLedIndividualActiveLogic((bool)readCmdNumber(msg));
-        else if (msg.startsWith("SOCKLOGIC"))
+        else if (msg.startsWith(F("SOCKLOGIC")))
             successful = SETTINGS->setSocketsActiveLogic((bool)readCmdNumber(msg));
-        else if (msg.startsWith("BTNLOGIC"))
+        else if (msg.startsWith(F("BTNLOGIC")))
             successful = SETTINGS->setButtonActiveLogic((bool)readCmdNumber(msg));
         // GETTIME
         // SETTIME <h> <m> <s>
-        else if (msg.startsWith("GETTIME"))
+        else if (msg.startsWith(F("GETTIME")))
         {
             printTime();
             successful = true;
         }
-        else if (msg.startsWith("SETTIME"))
+        else if (msg.startsWith(F("SETTIME")))
             successful = setTime(msg);
         // GETACTIVE <HH> <MM> <socket 1-5>
         // SETACTIVE <HH> <MM> <socket 1-5>
-        else if (msg.startsWith("GETACTIVE"))
+        else if (msg.startsWith(F("GETACTIVE")))
         {
             int *values = readCmdNumber(msg, 3);
 
@@ -148,19 +148,19 @@ public:
             if (successful)
                 Serial.println(SETTINGS->getSocketActivity(values[0], values[1], values[2]));
         }
-        else if (msg.startsWith("SETACTIVE"))
+        else if (msg.startsWith(F("SETACTIVE")))
         {
             int *values = readCmdNumber(msg, 4);
             successful = SETTINGS->setSocketActivity(values[0], values[1], values[2], values[3]);
         }
         // SETMODE <mode>
         // GETMODE
-        else if (msg.startsWith("SETMODE"))
+        else if (msg.startsWith(F("SETMODE")))
         {
             int value = readCmdNumber(msg);
             successful = PROGRAM_HANDLER->setProgramMode((MyProgramMode)value);
         }
-        else if (msg.startsWith("GETMODE"))
+        else if (msg.startsWith(F("GETMODE")))
         {
             Serial.println(PROGRAM_HANDLER->getProgramMode());
             successful = true;
@@ -219,7 +219,7 @@ public:
     void help()
     {
         for (uint8_t i = 0; i < MyStringHelper::helpMessageCount; i++)
-            Serial.println((const __FlashStringHelper *)pgm_read_ptr(&MyStringHelper::helpMessages[i]));
+            Serial.println((const __FlashStringHelper*)pgm_read_ptr(&MyStringHelper::helpMessages[i]));
     }
 
     bool setTime(String msg)
