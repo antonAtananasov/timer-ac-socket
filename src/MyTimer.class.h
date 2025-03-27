@@ -13,7 +13,6 @@ private:
     uint8_t hour = 0, minute = 0, second = 0;
     uint16_t millisecond = 0;
     unsigned long startTime = 0, lastUpdate = 0;
-    unsigned long SAVE_TO_EEPROM_INTERVAL_MS = TIME_SAVE_DELAY;
     unsigned long lastTimeSave = 0;
     MySettings *SETTINGS;
 
@@ -59,8 +58,8 @@ public:
         setMillisecond(elapsedMs);
 
         // autosave time
-        if (SAVE_TO_EEPROM_INTERVAL_MS > 0)
-            if (millis() - lastTimeSave > SAVE_TO_EEPROM_INTERVAL_MS)
+        if (TIME_SAVE_DELAY > 0)
+            if (millis() - lastTimeSave > TIME_SAVE_DELAY)
             {
                 SETTINGS->saveHour(hour);
                 SETTINGS->saveMinute(minute);

@@ -6,7 +6,7 @@
 
 //  Time keeping
 #define TIME_SHOW_DELAY MS_IN_ONE_SECOND //delay between led matrix updates when displaying current time
-#define TIME_SAVE_DELAY MS_IN_ONE_MINUTE * FIVE_MINUTES //delay between saving current time to EEPROM // saveToEEPROMIntervalMs = 0 means do not save
+#define TIME_SAVE_DELAY MS_IN_ONE_HOUR //delay between saving current time to EEPROM // saveToEEPROMIntervalMs = 0 means do not save
 
 //  Timing settings
 #define LED_BLINK_SLOW_DELAY_MS 350UL //how long an LED stays on and then off in ms when its supposed to blink quickly
@@ -22,6 +22,7 @@
 #define DEFAULT_LED_GROUP_ACTIVE_LOGIC HIGH // LED Logic level for enabling a LED group when not valid in MEMORY CONFIGURATION below
 #define DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC HIGH // LED Logic level for enabling an individual LED in a group when not valid in MEMORY CONFIGURATION below
 #define DEFAULT_SOCKET_ACTIVE_LOGIC LOW // Logic level for enabling an individual socket when not valid in MEMORY CONFIGURATION below
+#define DEFAULT_ANIMATE_SOCKET_LEDS true // boolean whether to start blinknig socket leds before their state changes when not valid in MEMORY CONFIGURATION below
 
 // Input controls wiring configuration
 #define PUSH_BUTTON_PIN A3 // Pin with pull up/down resistor to read button press
@@ -52,8 +53,8 @@
 //      12 clock leds from 1 to 12 o'clock
 //      5 socket leds from 1 to 5
 //      1 status led
-#define LED_PIN_PAIRS_LAYOUT \
-(const uint8_t[6][3][2]){\
+const uint8_t LED_PIN_PAIRS_LAYOUT[LED_GROUPS_COUNT][LED_INDIVIDUALS_COUNT][2] =\
+{\
  /* clock leds */ \
  {{LED_GROUP_1_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_1_PIN, LED_INDIVIDUAL_2_PIN}, {LED_GROUP_1_PIN, LED_INDIVIDUAL_3_PIN}},\
  {{LED_GROUP_2_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_2_PIN, LED_INDIVIDUAL_2_PIN}, {LED_GROUP_2_PIN, LED_INDIVIDUAL_3_PIN}},\
@@ -63,7 +64,8 @@
  {{LED_GROUP_5_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_5_PIN, LED_INDIVIDUAL_2_PIN}, {LED_GROUP_5_PIN, LED_INDIVIDUAL_3_PIN}},\
  {{LED_GROUP_6_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_6_PIN, LED_INDIVIDUAL_2_PIN},\
  /* status led */ \
- {LED_GROUP_6_PIN, LED_INDIVIDUAL_3_PIN}}}
+ {LED_GROUP_6_PIN, LED_INDIVIDUAL_3_PIN}},
+};
 
  
 // MEMORY CONFIGURATION
@@ -73,11 +75,12 @@
 #define EEPROM_MINUTE_BYTE_ADDRES 1u //where to store current time minute
 #define EEPROM_SECOND_BYTE_ADDRES 2u //where to store current time second
 //      Logic level
-#define EEPROM_LOGIC_LEVELS_BYTE_ADDRES 3u // where to store logic level bits
+#define EEPROM_CONFIGURATION_BYTE_ADDRES 3u // where to store logic level bits
 #define EEPROM_LOGIC_LEVEL_LED_GROUP_BIT_NUMBER 0u // LED Logic level bit for enabling a LED group
 #define EEPROM_LOGIC_LEVEL_LED_INDIVIDUAL_BIT_NUMBER 1u // LED Logic level bit for enabling an individual LED in a group
 #define EEPROM_LOGIC_LEVEL_SOCKET_BIT_NUMBER 2u // Logic level bit for enabling an individual socket
 #define EEPROM_LOGIC_LEVEL_BUTTON_BIT_NUMBER 3u // Logic level bit for push button
+#define EEPROM_ANIMATE_SOCKET_LEDS 4u // boolean for whether to start blinking socket leds 5 minutes ahead when their state is about to change (fast means its about to turn on, slow means its bout to turn off)
 //      Active state
 #define EEPROM_SOCKET_ACTIVITY_START_BYTE_ADDRES 4u // start address for storing when each socket should be active for every 5min period in 24hrs (takes EEPROM_SOCKET_ACTIVITY_BYTES_TOTAL (180) bytes)
 

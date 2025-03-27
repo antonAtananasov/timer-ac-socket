@@ -14,7 +14,8 @@ private:
     bool LED_GROUP_ACTIVE_LOGIC = DEFAULT_LED_GROUP_ACTIVE_LOGIC,
          LED_INDIVIDUAL_ACTIVE_LOGIC = DEFAULT_LED_INDIVIDUAL_ACTIVE_LOGIC,
          SOCKETS_ACTIVE_LOGIC = DEFAULT_SOCKET_ACTIVE_LOGIC,
-         BUTTON_ACTIVE_LOGIC = DEFAULT_BUTTON_ACTIVE_LOGIC;
+         BUTTON_ACTIVE_LOGIC = DEFAULT_BUTTON_ACTIVE_LOGIC,
+         ANIMATE_SOCKET_LEDS = DEFAULT_ANIMATE_SOCKET_LEDS;
 
     MyErrorCode errorCode = ERRORCODE_REBOOT;
 
@@ -33,15 +34,17 @@ public:
 
     bool loadLogicLevelsFromEEPROM()
     {
-        uint8_t logicLevelsByte = EEPROM.read(EEPROM_LOGIC_LEVELS_BYTE_ADDRES);
+        uint8_t logicLevelsByte = EEPROM.read(EEPROM_CONFIGURATION_BYTE_ADDRES);
 
         bool ledGroupActiveLogic = readEEPROMBit(logicLevelsByte, EEPROM_LOGIC_LEVEL_LED_GROUP_BIT_NUMBER);
         bool ledIndividualActiveLogic = readEEPROMBit(logicLevelsByte, EEPROM_LOGIC_LEVEL_LED_INDIVIDUAL_BIT_NUMBER);
         bool socketsActiveLogic = readEEPROMBit(logicLevelsByte, EEPROM_LOGIC_LEVEL_SOCKET_BIT_NUMBER);
+        bool animateSocketLeds = readEEPROMBit(logicLevelsByte, EEPROM_ANIMATE_SOCKET_LEDS);
 
         return setSocketsActiveLogic(socketsActiveLogic) &&
                setLedGroupActiveLogic(ledGroupActiveLogic) &&
-               setLedIndividualActiveLogic(ledIndividualActiveLogic);
+               setLedIndividualActiveLogic(ledIndividualActiveLogic) &&
+               setSocketLedAnimationActive(animateSocketLeds);
     }
     bool loadTimeFromEEPROM()
     {
@@ -79,7 +82,7 @@ public:
 
     bool setLedGroupActiveLogic(bool level)
     {
-        bool successful = setEEPROMBit(EEPROM_LOGIC_LEVELS_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_LED_GROUP_BIT_NUMBER, level);
+        bool successful = setEEPROMBit(EEPROM_CONFIGURATION_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_LED_GROUP_BIT_NUMBER, level);
         if (successful)
             LED_GROUP_ACTIVE_LOGIC = level;
 
@@ -87,7 +90,7 @@ public:
     }
     bool setLedIndividualActiveLogic(bool level)
     {
-        bool successful = setEEPROMBit(EEPROM_LOGIC_LEVELS_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_LED_INDIVIDUAL_BIT_NUMBER, level);
+        bool successful = setEEPROMBit(EEPROM_CONFIGURATION_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_LED_INDIVIDUAL_BIT_NUMBER, level);
         if (successful)
             LED_INDIVIDUAL_ACTIVE_LOGIC = level;
 
@@ -95,7 +98,7 @@ public:
     }
     bool setSocketsActiveLogic(bool level)
     {
-        bool successful = setEEPROMBit(EEPROM_LOGIC_LEVELS_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_SOCKET_BIT_NUMBER, level);
+        bool successful = setEEPROMBit(EEPROM_CONFIGURATION_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_SOCKET_BIT_NUMBER, level);
         if (successful)
             SOCKETS_ACTIVE_LOGIC = level;
 
@@ -103,12 +106,21 @@ public:
     }
     bool setButtonActiveLogic(bool level)
     {
-        bool successful = setEEPROMBit(EEPROM_LOGIC_LEVELS_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_BUTTON_BIT_NUMBER, level);
+        bool successful = setEEPROMBit(EEPROM_CONFIGURATION_BYTE_ADDRES, EEPROM_LOGIC_LEVEL_BUTTON_BIT_NUMBER, level);
         if (successful)
             BUTTON_ACTIVE_LOGIC = level;
 
         return successful;
     }
+    bool setSocketLedAnimationActive(bool level)
+    {
+        bool successful = setEEPROMBit(EEPROM_CONFIGURATION_BYTE_ADDRES, EEPROM_ANIMATE_SOCKET_LEDS, level);
+        if (successful)
+            ANIMATE_SOCKET_LEDS = level;
+
+        return successful;
+    }
+    bool getSocketLedAnimationActive(){return ANIMATE_SOCKET_LEDS;}
 
     bool getLedGroupActiveLogic() { return LED_GROUP_ACTIVE_LOGIC; }
     bool getLedIndividualActiveLogic() { return LED_INDIVIDUAL_ACTIVE_LOGIC; }
