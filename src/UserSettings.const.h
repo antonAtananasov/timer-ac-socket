@@ -53,7 +53,7 @@
 //      12 clock leds from 1 to 12 o'clock
 //      5 socket leds from 1 to 5
 //      1 status led
-const uint8_t LED_PIN_PAIRS_LAYOUT[LED_GROUPS_COUNT][LED_INDIVIDUALS_COUNT][2] =\
+const PROGMEM uint8_t LED_PIN_PAIRS_LAYOUT[LED_GROUPS_COUNT][LED_INDIVIDUALS_COUNT][2] =\
 {\
  /* clock leds */ \
  {{LED_GROUP_1_PIN, LED_INDIVIDUAL_1_PIN}, {LED_GROUP_1_PIN, LED_INDIVIDUAL_2_PIN}, {LED_GROUP_1_PIN, LED_INDIVIDUAL_3_PIN}},\
