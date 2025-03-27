@@ -167,14 +167,19 @@ public:
         }
         // SETANIM <0/1>
         // GETANIM
-        else if (msg.startsWith("SETANIM"))
+        else if (msg.startsWith(F("SETANIM")))
         {
             int value = readCmdNumber(msg);
             successful = SETTINGS->setSocketLedAnimationActive((bool)value);
         }
-        else if (msg.startsWith("GETANIM"))
+        else if (msg.startsWith(F("GETANIM")))
         {
             Serial.println(SETTINGS->getSocketLedAnimationActive());
+            successful = true;
+        } 
+        // GETERROR
+        else if (msg.startsWith(F("GETERROR"))){
+            Serial.println(SETTINGS->getErrorCode());
             successful = true;
         }
 

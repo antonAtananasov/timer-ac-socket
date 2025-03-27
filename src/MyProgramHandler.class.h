@@ -41,6 +41,7 @@ public:
         switch (mode)
         {
         case PROGRAM_DISPLAY_TIME:
+        case PROGRAM_SET_TIME:
         case PROGRAM_SET_TIME_AMPM:
         case PROGRAM_SET_TIME_HOUR:
         case PROGRAM_SET_TIME_MINUTE:
@@ -48,6 +49,7 @@ public:
         case PROGRAM_SET_SOCKETS_AMPM:
         case PROGRAM_SET_SOCKETS_HOUR:
         case PROGRAM_SET_SOCKETS_MINUTE:
+        case PROGRAM_SET_SOCKETS_STATES:
         case PROGRAM_TEST:
             enterModeTime = millis();
             currentMode = mode;
@@ -91,7 +93,7 @@ public:
             break;
         }
 
-        if (currentMode != PROGRAM_TEST) //updates are blocked only in test mode
+        if (currentMode != PROGRAM_TEST) // updates are blocked only in test mode
             SOCKET_MANAGER->update();
     }
 
@@ -104,7 +106,10 @@ public:
         {
         case ERRORCODE_REBOOT:
             if (buttonAction == BUTTON_LONG_PRESS)
+            {
+                SETTINGS->setErrorCode(ERRORCODE_NONE);
                 setProgramMode(PROGRAM_SET_TIME);
+            }
             break;
 
         case ERRORCODE_NONE:
@@ -132,8 +137,6 @@ public:
         case PROGRAM_SET_TIME:
         case PROGRAM_SET_SOCKETS:
         {
-            if (SETTINGS->getErrorCode() == ERRORCODE_REBOOT)
-                SETTINGS->setErrorCode(ERRORCODE_NONE);
             // flash clock leds and init variables
             if (millis() - enterModeTime < LED_BLINK_FAST_DELAY_MS)
                 LED_MATRIX->setClockLeds(LED_ON);
